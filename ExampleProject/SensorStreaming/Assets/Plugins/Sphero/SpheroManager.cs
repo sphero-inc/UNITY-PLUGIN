@@ -11,7 +11,8 @@ public class SpheroManager : MonoBehaviour {
 	void Start () {
 		Debug.Log("setup robot connection");
 		SpheroBridge._RKUNSetupRobotConnection();
-		deviceMessenger = new SpheroDeviceMessenger();
+//		deviceMessenger = new SpheroDeviceMessenger();
+//		deviceMessenger.AsyncDataReceived += ReceiveAsyncMessage;
 	}
 	
 	// Update is called once per frame
@@ -21,6 +22,11 @@ public class SpheroManager : MonoBehaviour {
 			SpheroBridge._enableDataStreaming();
 			streaming = true;
 		}
+	}
+
+	private void ReceiveAsyncMessage(object sender, EventArgs eventArgs)
+	{
+		Debug.Log("message received in event handler");
 	}
 
 }

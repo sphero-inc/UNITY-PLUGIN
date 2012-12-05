@@ -10,12 +10,11 @@
 #import <RobotKit/RobotKit.h>
 
 static RKUNBridge *sharedBridge = nil;
-void UnityPause(bool pause);
+extern void UnityPause(bool pause);
 extern void UnitySendMessage(const char *, const char *, const char *);
 
 @implementation RKUNBridge
 
-@synthesize lastData;
 
 @synthesize receiveDeviceMessageCallback;
 
@@ -90,27 +89,8 @@ extern void UnitySendMessage(const char *, const char *, const char *);
 {
     if ([data isKindOfClass:[RKDeviceSensorsAsyncData class]]) {
         RKDeviceSensorsAsyncData *sensors_data = (RKDeviceSensorsAsyncData *)data;
-        //NSLog(@"sensors_data.dataFrames - %@", sensors_data.dataFrames);
-
-        RKUNData sensorData;
-        
-        //lastYaw = 0.0;
-        for (RKDeviceSensorsData *data in sensors_data.dataFrames) {
-            RKAccelerometerData *accelerometer_data = data.accelerometerData;
-            sensorData.x = accelerometer_data.acceleration.x;
-            sensorData.y = accelerometer_data.acceleration.y;
-            sensorData.z = accelerometer_data.acceleration.z;
-        }
-        sensorData.yaw = [[[sensors_data.dataFrames objectAtIndex:0] attitudeData] yaw];
-        sensorData.pitch = [[[sensors_data.dataFrames objectAtIndex:0] attitudeData] pitch];
-        sensorData.roll = [[[sensors_data.dataFrames objectAtIndex:0] attitudeData] roll];
-        
-        self.lastData = sensorData;
-
         // Send serialized object to Unity
-        NSLog(@"Native code received sensor data.");
         if (receiveDeviceMessageCallback != NULL) {
-            NSLog(@"Sending the encoded sensor data");
             RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:sensors_data];
             receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
         }

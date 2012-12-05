@@ -6,17 +6,7 @@ public class SpheroBridge {
 
 	public static float s_calibrateGyroOffset = 0.0f;
 	public static float s_calibrateOffset = 0.0f;
-	
-	[StructLayout(LayoutKind.Sequential)]
-	public struct RKUNData {
-        public float pitch;
-        public float roll;
-        public float yaw;
-        public float x;
-        public float y;
-        public float z;
-    }
-	
+		
 #if UNITY_ANDROID
 	[DllImport ("RKUNBridge")]
 #else
@@ -72,13 +62,5 @@ public class SpheroBridge {
 	[DllImport ("__Internal")]
 #endif
 	public static extern void _disableDataStreaming();
-	
-	
-#if UNITY_ANDROID
-	[DllImport ("RKUNBridge")]
-#else
-	[DllImport ("__Internal")]
-#endif
-	public static extern RKUNData _RKUNSensorData();
-	
+		
 }

@@ -9,14 +9,6 @@
 #import <Foundation/Foundation.h>
 
 extern "C" {
-    typedef struct RKUNData {
-        float pitch;
-        float roll;
-        float yaw;
-        float x;
-        float y;
-        float z;
-    } RKUNData;
 
     typedef void (*ReceiveDeviceMessageCallback)(const char *);
 }
@@ -25,11 +17,7 @@ extern "C" {
 @interface RKUNBridge : NSObject {
     BOOL robotOnline;
     BOOL dataStreamingOn;
-    RKUNData lastData;
-
 }
-
-@property (atomic) RKUNData lastData;
 
 @property  ReceiveDeviceMessageCallback receiveDeviceMessageCallback;
 

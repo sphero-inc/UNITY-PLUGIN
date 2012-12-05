@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+	<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+	<ProductVersion>10.0.20506</ProductVersion>
+	<SchemaVersion>2.0</SchemaVersion>
+	<ProjectGuid>{0E7F5218-804C-170D-4065-550EB63E91F2}</ProjectGuid>
+	<OutputType>Library</OutputType>
+	<AppDesignerFolder>Properties</AppDesignerFolder>
+	<RootNamespace></RootNamespace>
+	<AssemblyName>Assembly-CSharp-firstpass</AssemblyName>
+	<TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+	<FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+	<DebugSymbols>true</DebugSymbols>
+	<DebugType>full</DebugType>
+	<Optimize>false</Optimize>
+	<OutputPath>Temp\bin\Debug\</OutputPath>
+	<DefineConstants>DEBUG;TRACE;UNITY_3_5_6;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_IOS;UNITY_IPHONE;ENABLE_GENERICS;ENABLE_TERRAIN;ENABLE_WEBCAM;ENABLE_MICROPHONE;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW</DefineConstants>
+	<ErrorReport>prompt</ErrorReport>
+	<WarningLevel>4</WarningLevel>
+	<NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+	<DebugType>pdbonly</DebugType>
+	<Optimize>true</Optimize>
+	<OutputPath>Temp\bin\Release\</OutputPath>
+	<DefineConstants>TRACE</DefineConstants>
+	<ErrorReport>prompt</ErrorReport>
+	<WarningLevel>4</WarningLevel>
+	<NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+	<Reference Include="System" />
+    <Reference Include="System.XML" />
+	<Reference Include="System.Core" />
+	<Reference Include="UnityEngine">
+	  <HintPath>/Applications/Unity/Unity.app/Contents/Frameworks/Managed/UnityEngine.dll</HintPath>
+	</Reference>
+	<Reference Include="UnityEditor">
+	  <HintPath>/Applications/Unity/Unity.app/Contents/Frameworks/Managed/UnityEditor.dll</HintPath>
+	</Reference>
+  </ItemGroup>
+  <ItemGroup>
+     <Compile Include="Assets\Plugins\SharpUnit\AssemblyInfo.cs" />
+     <Compile Include="Assets\Plugins\SharpUnit\Assert.cs" />
+     <Compile Include="Assets\Plugins\SharpUnit\TestCase.cs" />
+     <Compile Include="Assets\Plugins\SharpUnit\TestException.cs" />
+     <Compile Include="Assets\Plugins\SharpUnit\TestReporter.cs" />
+     <Compile Include="Assets\Plugins\SharpUnit\TestResult.cs" />
+     <Compile Include="Assets\Plugins\SharpUnit\TestSuite.cs" />
+     <Compile Include="Assets\Plugins\SharpUnit\UnitTest.cs" />
+     <Compile Include="Assets\Plugins\SharpUnit\Unity3D_TestReporter.cs" />
+     <Compile Include="Assets\Plugins\SharpUnit\Unity3D_TestRunner.cs" />
+     <Compile Include="Assets\Plugins\Sphero\Joystick.cs" />
+     <Compile Include="Assets\Plugins\Sphero\MonoPInvokeCallbackAttribute.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroBridge.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroDeviceAsyncMessage.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroDeviceMessage.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroDeviceMessageDecoder.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroDeviceMessageFactory.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroDeviceMessenger.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroDeviceSensorsAsyncData.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroManager.cs" />
+     <Compile Include="Assets\Plugins\SpheroTests\SpheroDeviceSensorsAsyncDataTests.cs" />
+     <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
+     <None Include="Assets\Plugins\Sphero\License.txt" />
+ <Reference Include="Assets\Plugins\Sphero\JsonFx.Json">
+ <HintPath>Assets\Plugins\Sphero\JsonFx.Json.dll</HintPath>
+ </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+	   Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  
+</Project>

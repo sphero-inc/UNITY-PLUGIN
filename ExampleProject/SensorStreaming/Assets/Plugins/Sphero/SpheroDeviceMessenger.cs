@@ -1,5 +1,5 @@
-using System.Collections;
 using System;
+using System.Collections.Generic;
 using JsonFx.Json;
 using System.Runtime.InteropServices;
 
@@ -8,11 +8,18 @@ public class SpheroDeviceMessenger  {
 	public event EventHandler ResponseDataReceived;
 	public event EventHandler AsyncDataReceived;
 
+	private static SpheroDeviceMessenger sharedInstance;
+
 	private delegate void ReceiveDeviceMessageDelegate(string encodedMessage);
 
 	static SpheroDeviceMessenger() 
 	{
 		_RegisterRecieveDeviceMessageCallback(ReceiveDeviceMessage);
+	}
+
+	private SpheroDeviceMessenger()
+	{
+		sharedInstance = this;
 	}
 
 	protected virtual void OnResponsDataReceived(EventArgs eventArgs)
@@ -34,12 +41,8 @@ public class SpheroDeviceMessenger  {
 	[MonoPInvokeCallback (typeof (ReceiveDeviceMessageDelegate))]
 	protected static void ReceiveDeviceMessage(string encodedMessage) 
 	{
-		// Decode the stirng into an object.
-		Console.WriteLine(encodedMessage);
-		JsonReader reader = new JsonReader(encodedMessage);
-		object deserializedObject = reader.Deserialize();
-		Type type = deserializedObject.GetType();
-		Console.WriteLine(type);
+		// Decode the stirng into an object
+		// Pass it on to event handlers
 	}
 
 	[DllImport ("__Internal")]
