@@ -11,8 +11,8 @@ public class SpheroManager : MonoBehaviour {
 	void Start () {
 		Debug.Log("setup robot connection");
 		SpheroBridge._RKUNSetupRobotConnection();
-//		deviceMessenger = new SpheroDeviceMessenger();
-//		deviceMessenger.AsyncDataReceived += ReceiveAsyncMessage;
+		deviceMessenger = SpheroDeviceMessenger.SharedInstance;
+		deviceMessenger.AsyncDataReceived += ReceiveAsyncMessage;
 	}
 	
 	// Update is called once per frame
@@ -24,9 +24,13 @@ public class SpheroManager : MonoBehaviour {
 		}
 	}
 
-	private void ReceiveAsyncMessage(object sender, EventArgs eventArgs)
+	private void ReceiveAsyncMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
 	{
-		Debug.Log("message received in event handler");
+		SpheroDeviceSensorsAsyncData message = (SpheroDeviceSensorsAsyncData)eventArgs.Message;
+		SpheroAccelerometerData.Acceleration acceleration = message.Frames[0].AccelerometerData.Normalized;
+		
+		Debug.Log("{" + acceleration.X + ", " + acceleration.Y + "," + 
+			acceleration.Z + "}");
 	}
 
 }

@@ -56,14 +56,16 @@
      <Compile Include="Assets\Plugins\SharpUnit\Unity3D_TestRunner.cs" />
      <Compile Include="Assets\Plugins\Sphero\Joystick.cs" />
      <Compile Include="Assets\Plugins\Sphero\MonoPInvokeCallbackAttribute.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroAccelerometerData.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroBridge.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroDeviceAsyncMessage.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroDeviceMessage.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroDeviceMessageDecoder.cs" />
-     <Compile Include="Assets\Plugins\Sphero\SpheroDeviceMessageFactory.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroDeviceMessenger.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroDeviceSensorsAsyncData.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroDeviceSensorsData.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroManager.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroSensorData.cs" />
      <Compile Include="Assets\Plugins\SpheroTests\SpheroDeviceSensorsAsyncDataTests.cs" />
      <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
      <None Include="Assets\Plugins\Sphero\License.txt" />

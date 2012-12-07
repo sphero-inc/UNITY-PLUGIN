@@ -8,17 +8,8 @@ public class SpheroDeviceMessageDecoder {
 	public static SpheroDeviceMessage messageFromEncodedString(string encodedMessage)
 	{
 		SpheroDeviceMessageDecoder decoder = 
-			new SpheroDeviceMessageDecoder(encodedMessage);
-		// Get the class from the decoder to make an object. "Sphero" is added
-		// for namespacing.
-		string className = "Sphero" + (string)decoder.DecodeObject("class");
-		
-		// Create an instance from this class name
-		Type messageType = Type.GetType(className);
-		Object[] parameters = new Object[] {decoder};
-		object message = Activator.CreateInstance(messageType, parameters);
-		
-		return (SpheroDeviceMessage)message;
+			new SpheroDeviceMessageDecoder(encodedMessage);		
+		return (SpheroDeviceMessage)decoder.CreateObject();
 	}
 
 	public SpheroDeviceMessageDecoder(string encodedMessage) 
@@ -27,10 +18,47 @@ public class SpheroDeviceMessageDecoder {
 		dictionaryRepresentation = jsonReader.Deserialize< Dictionary<string,object> >();
 	}	
 	
+	private SpheroDeviceMessageDecoder(Dictionary<string,object> encodedDictionary) {
+		dictionaryRepresentation = encodedDictionary;
+	}
+	
+	private object CreateObject()
+	{
+		// Get the class from the decoder to make an object. "Sphero" is added
+		// for namespacing.
+		string className = "Sphero" +  DecodeString("class");
+		
+		// Create an instance from this class name
+		Type messageType = Type.GetType(className);
+		Object[] parameters = new Object[] {this};
+		return Activator.CreateInstance(messageType, parameters);
+	}
+	
 	public object DecodeObject(string key)
 	{
 		object value = null;
 		dictionaryRepresentation.TryGetValue(key, out value);
+		
+		if (value is Array) {
+			// need to decode the objects in the array
+			Dictionary<string,object>[] encodedArray = (Dictionary<string,object>[])value;
+			UnityEngine.Debug.Log(encodedArray.Length);
+			Object[] decodedArray = new Object[encodedArray.Length];
+			int index = 0;
+			foreach(Dictionary<string,object> encodedDictionary in encodedArray)
+			{
+				SpheroDeviceMessageDecoder itemDecoder = 
+					new SpheroDeviceMessageDecoder(encodedDictionary);
+				object decodedItem = itemDecoder.CreateObject();
+				decodedArray[index++] = decodedItem;
+			}
+			value = decodedArray;
+		} else if (value is Dictionary<string, object>) {
+			SpheroDeviceMessageDecoder decoder = 
+				new SpheroDeviceMessageDecoder((Dictionary<string,object>)value);
+			value = decoder.CreateObject();
+		}
+		
 		return value;
 	}
 		
@@ -52,5 +80,10 @@ public class SpheroDeviceMessageDecoder {
 	public ulong DecodeUInt64(string key)
 	{
 		return Convert.ToUInt64(DecodeObject(key));
+	}
+	
+	public float DecodeFloat(string key)
+	{
+		return Convert.ToSingle(DecodeObject(key));
 	}
 }

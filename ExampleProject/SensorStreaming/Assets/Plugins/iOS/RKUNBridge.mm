@@ -68,7 +68,8 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOff];
     [RKBackLEDOutputCommand sendCommandWithBrightness:1.0];
     [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:1.0 blue:1.0];
-    [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:20 packetFrames:1 sensorMask:RKDataStreamingMaskAccelerometerXFiltered | RKDataStreamingMaskAccelerometerYFiltered | RKDataStreamingMaskAccelerometerZFiltered | RKDataStreamingMaskIMUPitchAngleFiltered | RKDataStreamingMaskIMURollAngleFiltered | RKDataStreamingMaskIMUYawAngleFiltered  packetCount:0];
+    [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:20 packetFrames:1 sensorMask:RKDataStreamingMaskAccelerometerXFiltered | RKDataStreamingMaskAccelerometerYFiltered | RKDataStreamingMaskAccelerometerZFiltered packetCount:0];
+    //| RKDataStreamingMaskIMUPitchAngleFiltered | RKDataStreamingMaskIMURollAngleFiltered | RKDataStreamingMaskIMUYawAngleFiltered  packetCount:0];
     
     dataStreamingOn = YES;
     
@@ -115,11 +116,7 @@ extern "C" {
         [RKRollCommand sendCommandWithHeading:heading velocity:speed];
     }
     
-    
-    struct RKUNData _RKUNSensorData() {
-        return [RKUNBridge sharedBridge].lastData;
-    }
-    
+        
     void _enableDataStreaming() {
         [[RKUNBridge sharedBridge] enableDataStreaming];
     }

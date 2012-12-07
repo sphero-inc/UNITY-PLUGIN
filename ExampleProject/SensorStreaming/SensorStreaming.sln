@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 
 Project("{741E6597-85F7-1811-EB39-576A7A9FA3E8}") = "SensorStreaming", "Assembly-CSharp-firstpass.csproj", "{0E7F5218-804C-170D-4065-550EB63E91F2}"
 EndProject
+Project("{741E6597-85F7-1811-EB39-576A7A9FA3E8}") = "SensorStreaming", "Assembly-CSharp.csproj", "{406D9780-4B04-DC2C-6A21-595F08B294DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,11 +15,15 @@ Global
 		{0E7F5218-804C-170D-4065-550EB63E91F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E7F5218-804C-170D-4065-550EB63E91F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E7F5218-804C-170D-4065-550EB63E91F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{406D9780-4B04-DC2C-6A21-595F08B294DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{406D9780-4B04-DC2C-6A21-595F08B294DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{406D9780-4B04-DC2C-6A21-595F08B294DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{406D9780-4B04-DC2C-6A21-595F08B294DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-						GlobalSection(MonoDevelopProperties) = preSolution
+																			GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Assembly-CSharp.csproj
 		Policies = $0
 		$0.TextStylePolicy = $1
