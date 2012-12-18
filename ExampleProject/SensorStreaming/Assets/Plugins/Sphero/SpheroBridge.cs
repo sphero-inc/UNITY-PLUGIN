@@ -55,7 +55,7 @@ public class SpheroBridge {
 	[DllImport ("__Internal")]
 #endif
 	public static extern void SetDataStreaming(ushort sampleRateDivisor, 
-		ushort sampleFrames, ulong sampleMask, byte sampleCount);
+		ushort sampleFrames, SpheroDataStreamingMask sampleMask, byte sampleCount);
 
 #if UNITY_ANDROID
 	[DllImport ("RKUNBridge")]
@@ -63,7 +63,7 @@ public class SpheroBridge {
 	[DllImport ("__Internal")]
 #endif
 	public static extern void EnableControllerStreaming(ushort sampleRateDivisor,
-		ushort sampleFrames, ulong sampleMask);
+		ushort sampleFrames, SpheroDataStreamingMask sampleMask);
 		
 #if UNITY_ANDROID
 	[DllImport ("RKUNBridge")]
