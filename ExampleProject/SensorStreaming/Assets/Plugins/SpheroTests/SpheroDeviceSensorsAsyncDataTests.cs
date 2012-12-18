@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using SharpUnit;
 
 namespace SharpUnit {
@@ -8,11 +9,7 @@ namespace SharpUnit {
 		[UnitTest]
 		public void TestDecode()
 		{
-			string encodedString = "{\"class\":\"DeviceSensorsAsyncData\", " +
-			"\"timeStamp\":123456, \"frameCount\":2, \"mask\":57344, " +
-			"\"dataFrames\":[{\"class\":\"DeviceSensorsData\", " +
-			"\"accelerometerData\":{\"class\":\"AccelerometerData\", \"normalized.x\":1.23, \"normalized.y\":1.23, \"normalized.z\":1.23}}, " +
-			"{\"class\":\"DeviceSensorsData\"}]}";
+			string encodedString = File.ReadAllText("/Users/brian/Documents/code/development/unity-plugin/ExampleProject/SensorStreaming/Assets/Plugins/SpheroTests/DataStreamingExample.json");
 			
 			// Test that a message is created.
 			SpheroDeviceMessage message = 
@@ -26,7 +23,7 @@ namespace SharpUnit {
 				(SpheroDeviceSensorsAsyncData)message;
 				
 			Assert.Equal(2, sensorsAsyncData.FrameCount);
-			Assert.Equal(57344, sensorsAsyncData.Mask);		
+			Assert.Equal(0xF00000000067E060, sensorsAsyncData.Mask);		
 			Assert.NotNull(sensorsAsyncData.Frames);
 			Assert.True(sensorsAsyncData.Frames.Length > 1);
 			
@@ -37,6 +34,23 @@ namespace SharpUnit {
 			Assert.Equal(1.23f, sensorsData.AccelerometerData.Normalized.X);
 			Assert.Equal(1.23f, sensorsData.AccelerometerData.Normalized.Y);
 			Assert.Equal(1.23f, sensorsData.AccelerometerData.Normalized.Z); 
+			
+			// Attitude 
+			Assert.Equal(45.0f, sensorsData.AttitudeData.Pitch);
+			Assert.Equal(180.0f, sensorsData.AttitudeData.Roll);
+			Assert.Equal(270.0f, sensorsData.AttitudeData.Yaw);
+			
+			// Quaternion
+			Assert.Equal(0.3f, sensorsData.QuaternionData.Q0);
+			Assert.Equal(0.7f, sensorsData.QuaternionData.Q1);
+			Assert.Equal(0.3f, sensorsData.QuaternionData.Q2);
+			Assert.Equal(1.0f, sensorsData.QuaternionData.Q3);
+			
+			// back EMF
+			Assert.Equal(200, sensorsData.BackEMFData.Filtered.right);
+			Assert.Equal(200, sensorsData.BackEMFData.Filtered.left);
+			Assert.Equal(200, sensorsData.BackEMFData.Raw.right);
+			Assert.Equal(200, sensorsData.BackEMFData.Raw.left);
 		}
 	}	
 }

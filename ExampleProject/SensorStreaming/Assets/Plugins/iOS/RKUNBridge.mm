@@ -22,7 +22,7 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     self = [super init];
     
     robotOnline = NO;
-    dataStreamingOn = NO;
+    controllerStreamingOn = NO;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillEnterBackground) name:UIApplicationWillTerminateNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillEnterBackground) name:UIApplicationWillResignActiveNotification object:nil];
@@ -51,8 +51,6 @@ extern void UnitySendMessage(const char *, const char *, const char *);
 }
 
 -(void)appWillEnterBackground {
-    [self disableDataStreaming];
-    [RKBackLEDOutputCommand sendCommandWithBrightness:0.0];
     [[RKRobotProvider sharedRobotProvider] closeRobotConnection];
 }
 
@@ -60,29 +58,44 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     robotOnline = YES;
 }
 
--(void)enableDataStreaming {
-    if(dataStreamingOn && !robotOnline) return;    
+- (void)setDataStreamingWithSampleRateDivisor:(uint16_t)divisor
+                                 packetFrames:(uint16_t)frames
+                                   sensorMask:(uint64_t)mask
+                                  packetCount:(uint8_t)count
+{
+    if (!robotOnline) return;
     
     [[RKDeviceMessenger sharedMessenger] addDataStreamingObserver:self selector:@selector(handleDataStreaming:)];
+    [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:divisor
+                                                   packetFrames:frames
+                                                     sensorMask:mask
+                                                    packetCount:count];
+}
+
+-(void)enableControllerStreamingWithSampleRateDivisor:(uint16_t)divisor
+                                         packetFrames:(uint16_t)frames
+                                           sensorMask:(uint64_t)mask
+ {
+     if(controllerStreamingOn && !robotOnline) return;
+     
+     NSLog(@"Streaming Mask - %llx", mask);
     
-    [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOff];
-    [RKBackLEDOutputCommand sendCommandWithBrightness:1.0];
-    [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:1.0 blue:1.0];
-    [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:20 packetFrames:1 sensorMask:RKDataStreamingMaskAccelerometerXFiltered | RKDataStreamingMaskAccelerometerYFiltered | RKDataStreamingMaskAccelerometerZFiltered packetCount:0];
-    //| RKDataStreamingMaskIMUPitchAngleFiltered | RKDataStreamingMaskIMURollAngleFiltered | RKDataStreamingMaskIMUYawAngleFiltered  packetCount:0];
-    
-    dataStreamingOn = YES;
+     [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOff];
+     [RKBackLEDOutputCommand sendCommandWithBrightness:1.0];
+     [self setDataStreamingWithSampleRateDivisor:divisor packetFrames:frames sensorMask:mask packetCount:0];
+     controllerStreamingOn = YES;
     
 }
 
--(void)disableDataStreaming {
-    //if(!dataStreamingOn) return;
+-(void)disableControllerStreaming {
+    if (!controllerStreamingOn) return;
     
     [[RKDeviceMessenger sharedMessenger] removeDataStreamingObserver:self];
     
     [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:0 packetFrames:0 sensorMask:0  packetCount:0];
+    [RKBackLEDOutputCommand sendCommandWithBrightness:0.0];
     [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOn];
-    dataStreamingOn = NO;
+    controllerStreamingOn = NO;
     
 }
 
@@ -90,6 +103,10 @@ extern void UnitySendMessage(const char *, const char *, const char *);
 {
     if ([data isKindOfClass:[RKDeviceSensorsAsyncData class]]) {
         RKDeviceSensorsAsyncData *sensors_data = (RKDeviceSensorsAsyncData *)data;
+        RKDeviceSensorsData *data = [sensors_data.dataFrames objectAtIndex:0];
+        NSLog(@"{q0:%f, q1:%f, q2:%f, q3:%f}", data.quaternionData.quaternions.q0, data.quaternionData.quaternions.q1,
+              data.quaternionData.quaternions.q2, data.quaternionData.quaternions.q3);
+        
         // Send serialized object to Unity
         if (receiveDeviceMessageCallback != NULL) {
             RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:sensors_data];
@@ -100,36 +117,46 @@ extern void UnitySendMessage(const char *, const char *, const char *);
 
 extern "C" {
     
-    void _RKUNSetupRobotConnection() {
+    void SetupRobotConnection() {
         [[RKUNBridge sharedBridge] connectToRobot];
     }
     
-    bool _RKUNIsRobotConnected() {
+    bool IsRobotConnected() {
         return [[RKUNBridge sharedBridge] isRobotOnline];
     }
     
-    void _RKUNRGB(float red, float green, float blue) {
+    void SetRGB(float red, float green, float blue) {
         [RKRGBLEDOutputCommand sendCommandWithRed:red green:green blue:blue];
     }
     
-    void _RKUNRoll(int heading, float speed) {
+    void Roll(int heading, float speed) {
         [RKRollCommand sendCommandWithHeading:heading velocity:speed];
     }
     
-        
-    void _enableDataStreaming() {
-        [[RKUNBridge sharedBridge] enableDataStreaming];
+    void SetDataStreaming(uint16_t sampleRateDivisor, uint16_t sampleFrames,
+    	 uint64_t sampleMask, uint8_t sampleCount)
+    {
+        [[RKUNBridge sharedBridge] setDataStreamingWithSampleRateDivisor:sampleRateDivisor
+                                                            packetFrames:sampleFrames
+                                                              sensorMask:sampleMask
+                                                             packetCount:sampleCount];
     }
     
-    void _disableDataStreaming() {
-        [[RKUNBridge sharedBridge] disableDataStreaming];
+    void EnableControllerStreaming(uint16_t divisor, uint16_t frames, uint64_t mask) {
+        [[RKUNBridge sharedBridge] enableControllerStreamingWithSampleRateDivisor:divisor
+                                                                     packetFrames:frames
+                                                                       sensorMask:mask];
     }
     
-    void _RKUNCalibrate(int heading) {
+    void DisableControllerStreaming() {
+        [[RKUNBridge sharedBridge] disableControllerStreaming];
+    }
+    
+    void SetHeading(int heading) {
         [RKCalibrateCommand sendCommandWithHeading:heading];
     }
     
-    void _RKUNBackLED(float intensity) {
+    void SetBackLED(float intensity) {
         [RKBackLEDOutputCommand sendCommandWithBrightness:intensity];
     }
     

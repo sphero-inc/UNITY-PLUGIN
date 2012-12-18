@@ -57,6 +57,7 @@ public class SpheroDeviceMessenger  {
 	[MonoPInvokeCallback (typeof (ReceiveDeviceMessageDelegate))]
 	protected static void ReceiveDeviceMessage(string encodedMessage) 
 	{
+		//UnityEngine.Debug.Log(encodedMessage);
 		// Decode the stirng into an object
 		SpheroDeviceMessage message = SpheroDeviceMessageDecoder.messageFromEncodedString(encodedMessage);
 		

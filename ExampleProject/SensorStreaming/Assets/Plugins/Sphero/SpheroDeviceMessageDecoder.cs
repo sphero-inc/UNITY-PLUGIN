@@ -77,6 +77,11 @@ public class SpheroDeviceMessageDecoder {
 		return Convert.ToInt64(DecodeObject(key));
 	}
 	
+	public ushort DecodeUInt16(string key)
+	{
+		return Convert.ToUInt16(DecodeObject(key));
+	}
+	
 	public ulong DecodeUInt64(string key)
 	{
 		return Convert.ToUInt64(DecodeObject(key));

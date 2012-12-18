@@ -57,6 +57,8 @@
      <Compile Include="Assets\Plugins\Sphero\Joystick.cs" />
      <Compile Include="Assets\Plugins\Sphero\MonoPInvokeCallbackAttribute.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroAccelerometerData.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroAttitudeData.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroBackEMFData.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroBridge.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroDeviceAsyncMessage.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroDeviceMessage.cs" />
@@ -65,6 +67,7 @@
      <Compile Include="Assets\Plugins\Sphero\SpheroDeviceSensorsAsyncData.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroDeviceSensorsData.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroManager.cs" />
+     <Compile Include="Assets\Plugins\Sphero\SpheroQuaternionData.cs" />
      <Compile Include="Assets\Plugins\Sphero\SpheroSensorData.cs" />
      <Compile Include="Assets\Plugins\SpheroTests\SpheroDeviceSensorsAsyncDataTests.cs" />
      <None Include="Assets\Plugins\Android\AndroidManifest.xml" />

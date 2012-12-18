@@ -16,7 +16,7 @@ extern "C" {
 
 @interface RKUNBridge : NSObject {
     BOOL robotOnline;
-    BOOL dataStreamingOn;
+    BOOL controllerStreamingOn;
 }
 
 @property  ReceiveDeviceMessageCallback receiveDeviceMessageCallback;
@@ -26,7 +26,13 @@ extern "C" {
 -(void)connectToRobot;
 -(BOOL)isRobotOnline;
 
--(void)enableDataStreaming;
--(void)disableDataStreaming;
+- (void)setDataStreamingWithSampleRateDivisor:(uint16_t)divisor
+                                 packetFrames:(uint16_t)frames
+                                   sensorMask:(uint64_t)mask
+                                  packetCount:(uint8_t)count;
+-(void)enableControllerStreamingWithSampleRateDivisor:(uint16_t)divisor
+                                         packetFrames:(uint16_t)frames
+                                           sensorMask:(uint64_t)mask;
+-(void)disableCotrollerStreaming;
 
 @end
