@@ -51,6 +51,13 @@ namespace SharpUnit {
 			Assert.Equal(200, sensorsData.BackEMFData.Filtered.left);
 			Assert.Equal(200, sensorsData.BackEMFData.Raw.right);
 			Assert.Equal(200, sensorsData.BackEMFData.Raw.left);
+			
+			// locator
+			Assert.Equal(190.2f, sensorsData.LocatorData.Position.x);
+			Assert.Equal(85.6f, sensorsData.LocatorData.Position.y);
+			Assert.True(Math.Abs(208.5746868630036f - sensorsData.LocatorData.Position.Magnitude()) < 0.001);
+			Assert.Equal(9.99f, sensorsData.LocatorData.Velocity.x);
+			Assert.Equal(86.4f, sensorsData.LocatorData.Velocity.y);
 		}
 	}	
 }

@@ -5,6 +5,7 @@ public class SpheroDeviceSensorsData {
 	private SpheroAttitudeData		attitudeData;
 	private SpheroQuaternionData	quaternionData;
 	private SpheroBackEMFData		backEMFData;
+	private SpheroLocatorData		locatorData;
 	
 	
 	public SpheroAccelerometerData AccelerometerData
@@ -27,6 +28,11 @@ public class SpheroDeviceSensorsData {
 		get{ return backEMFData; }
 	}
 	
+	public SpheroLocatorData LocatorData
+	{
+		get{ return locatorData; }
+	}
+	
 	public SpheroDeviceSensorsData(SpheroDeviceMessageDecoder decoder)
 	{
 		accelerometerData = 
@@ -34,5 +40,6 @@ public class SpheroDeviceSensorsData {
 		attitudeData = (SpheroAttitudeData)decoder.DecodeObject("attitudeData");
 		quaternionData = (SpheroQuaternionData)decoder.DecodeObject("quaternionData");
 		backEMFData = (SpheroBackEMFData)decoder.DecodeObject("backEMFData");
+		locatorData = (SpheroLocatorData)decoder.DecodeObject("locatorData");
 	}
 }
