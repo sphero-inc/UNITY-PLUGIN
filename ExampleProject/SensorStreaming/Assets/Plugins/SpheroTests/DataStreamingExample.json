@@ -1,9 +1,11 @@
 {"class":"DeviceSensorsAsyncData", "timeStamp":123456, "frameCount":2, 
-	"mask":17293822569109512288,
+	"mask":17293822572867608672,
 	 "dataFrames":[
 	 	{"class":"DeviceSensorsData",
 	 		"accelerometerData":{"class":"AccelerometerData", "normalized.x":1.23, 	
-	 			"normalized.y":1.23, "normalized.z":1.23},
+	 			"normalized.y":1.23, "normalized.z":1.23, 
+	 			"accelerationRaw.x":4096, "accelerationRaw.y":4096, 
+	 			"accelerationRaw.z":4096},
 			"attitudeData":{"class":"AttitudeData", "pitch":45.0, "roll":180.0,
 				"yaw":270.0},
 			"quaternionData":{"class":"QuaternionData", "quaternions.q0":0.3, 

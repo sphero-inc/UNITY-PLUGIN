@@ -23,7 +23,7 @@ namespace SharpUnit {
 				(SpheroDeviceSensorsAsyncData)message;
 				
 			Assert.Equal(2, sensorsAsyncData.FrameCount);
-			Assert.Equal(0xF00000000067E060, sensorsAsyncData.Mask);		
+			Assert.Equal(0xF0000000E067E060, sensorsAsyncData.Mask);		
 			Assert.NotNull(sensorsAsyncData.Frames);
 			Assert.True(sensorsAsyncData.Frames.Length > 1);
 			
@@ -34,6 +34,9 @@ namespace SharpUnit {
 			Assert.Equal(1.23f, sensorsData.AccelerometerData.Normalized.X);
 			Assert.Equal(1.23f, sensorsData.AccelerometerData.Normalized.Y);
 			Assert.Equal(1.23f, sensorsData.AccelerometerData.Normalized.Z); 
+			Assert.Equal(4096, sensorsData.AccelerometerData.Raw.x);
+			Assert.Equal(4096, sensorsData.AccelerometerData.Raw.y);
+			Assert.Equal(4096, sensorsData.AccelerometerData.Raw.z);
 			
 			// Attitude 
 			Assert.Equal(45.0f, sensorsData.AttitudeData.Pitch);
