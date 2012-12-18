@@ -58,6 +58,14 @@ namespace SharpUnit {
 			Assert.True(Math.Abs(208.5746868630036f - sensorsData.LocatorData.Position.Magnitude()) < 0.001);
 			Assert.Equal(9.99f, sensorsData.LocatorData.Velocity.x);
 			Assert.Equal(86.4f, sensorsData.LocatorData.Velocity.y);
+			
+			// gyro
+			Assert.Equal(300, sensorsData.GyroData.RotationRate.x);
+			Assert.Equal(300, sensorsData.GyroData.RotationRate.y);
+			Assert.Equal(300, sensorsData.GyroData.RotationRate.z);
+			Assert.Equal(300, sensorsData.GyroData.RotationRateRaw.x);
+			Assert.Equal(300, sensorsData.GyroData.RotationRateRaw.y);
+			Assert.Equal(300, sensorsData.GyroData.RotationRateRaw.z);
 		}
 	}	
 }
