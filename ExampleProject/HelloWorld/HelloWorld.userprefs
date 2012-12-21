@@ -1,9 +1,8 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/ConnectionGUI.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../../../Windows/SDK Source/SpheroCommunicator/SpheroCommunicator.cs">
     <Files>
       <File FileName="../../../../Windows/SDK Source/SpheroCommunicator/SpheroCommunicator.cs" Line="76" Column="50" />
-      <File FileName="Assets/Scripts/ConnectionGUI.cs" Line="156" Column="4" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

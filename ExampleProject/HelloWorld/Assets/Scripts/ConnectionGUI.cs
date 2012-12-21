@@ -40,17 +40,20 @@ public class ConnectionGUI : MonoBehaviour {
 	// Native Java Objects
 	AndroidJavaObject m_RobotProvider;
 	AndroidJavaObject m_PairedRobots;
+	AndroidJavaObject m_ConnectingRobot;
 
 	// Paired Sphero Info
 	int m_PairedRobotCount;
 	string[] m_RobotNames;
 	int m_RobotConnectingIndex = -1;
 	
+	// Update counter
+	int m_UpdateCounter = 0;
+	
 	// Use this for initialization
 	void Start () {
 		
 		// Initialize GUI 
-		
 		
 		// The SDK uses alot of handlers that need a valid Looper in the thread, so set that up here
         using (AndroidJavaClass jc = new AndroidJavaClass("android.os.Looper"))
@@ -97,7 +100,28 @@ public class ConnectionGUI : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+		m_UpdateCounter++;
+		// Check if we are connecting to a robot every 5 frames
+		if( m_RobotConnectingIndex >= 0 && (m_UpdateCounter%5)==0 ) {
+			// Check if the robot is still connecting
+			if( !m_ConnectingRobot.Call<bool>("isConnecting") ) {
+				// Check if the robot connection failed or succeeded
+				if( !m_ConnectingRobot.Call<bool>("isConnectedUnity") ) {
+					m_Title = "Connection Failed";	
+				}
+				// No longer connecting to a robot
+				m_RobotConnectingIndex = -1;
+			}
+			if( m_ConnectingRobot.Call<bool>("isConnectedUnity") ) {
+				m_Title = "Connection Success";
+				// No longer connecting to a robot
+				m_RobotConnectingIndex = -1;
+				using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RGBLEDOutputCommand"))
+				{
+			        jc.CallStatic("sendCommand",m_ConnectingRobot,255,0,0);	
+				}
+			}
+		}
 	}
 	
 	// Called when the GUI should update
@@ -133,9 +157,12 @@ public class ConnectionGUI : MonoBehaviour {
 				// Grab a handle on the RobotProvider
 				using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RobotProvider"))
 				{
+					// Connect the selected robot
 	        		m_RobotProvider = jc.CallStatic<AndroidJavaObject>("getDefaultProvider");
 					m_RobotProvider.Call("control", m_SpheroLabelSelected);
 					m_RobotProvider.Call<AndroidJavaObject>("connectControlledRobots");
+					// Save the robot for future calls
+					m_ConnectingRobot = m_PairedRobots.Call<AndroidJavaObject>("get",m_SpheroLabelSelected);
 				}
 			
 				// Adjust title info
