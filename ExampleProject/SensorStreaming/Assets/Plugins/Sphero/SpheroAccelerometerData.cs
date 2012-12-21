@@ -16,10 +16,16 @@ public class SpheroAccelerometerData : SpheroSensorData
 	}
 	
 	private Acceleration normalized = new Acceleration();
+	private ThreeAxisSensor raw;
 	
 	public Acceleration Normalized 
 	{
 		get{ return normalized; }
+	}
+	
+	public ThreeAxisSensor Raw
+	{
+		get{ return raw; }
 	}
 	
 	public SpheroAccelerometerData(SpheroDeviceMessageDecoder decoder) : base(decoder)
@@ -27,5 +33,8 @@ public class SpheroAccelerometerData : SpheroSensorData
 		normalized.X = decoder.DecodeFloat("normalized.x");
 		normalized.Y = decoder.DecodeFloat("normalized.y");
 		normalized.Z = decoder.DecodeFloat("normalized.z");
+		raw.x = decoder.DecodeUInt16("accelerationRaw.x");
+		raw.y = decoder.DecodeUInt16("accelerationRaw.y");
+		raw.z = decoder.DecodeUInt16("accelerationRaw.z");
 	}
 }

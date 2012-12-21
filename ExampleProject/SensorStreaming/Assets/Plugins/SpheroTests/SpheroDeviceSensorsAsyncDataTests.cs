@@ -23,7 +23,7 @@ namespace SharpUnit {
 				(SpheroDeviceSensorsAsyncData)message;
 				
 			Assert.Equal(2, sensorsAsyncData.FrameCount);
-			Assert.Equal(0xF00000000067E060, sensorsAsyncData.Mask);		
+			Assert.Equal(0xF0000000E067E060, sensorsAsyncData.Mask);		
 			Assert.NotNull(sensorsAsyncData.Frames);
 			Assert.True(sensorsAsyncData.Frames.Length > 1);
 			
@@ -34,6 +34,9 @@ namespace SharpUnit {
 			Assert.Equal(1.23f, sensorsData.AccelerometerData.Normalized.X);
 			Assert.Equal(1.23f, sensorsData.AccelerometerData.Normalized.Y);
 			Assert.Equal(1.23f, sensorsData.AccelerometerData.Normalized.Z); 
+			Assert.Equal(4096, sensorsData.AccelerometerData.Raw.x);
+			Assert.Equal(4096, sensorsData.AccelerometerData.Raw.y);
+			Assert.Equal(4096, sensorsData.AccelerometerData.Raw.z);
 			
 			// Attitude 
 			Assert.Equal(45.0f, sensorsData.AttitudeData.Pitch);
@@ -51,6 +54,21 @@ namespace SharpUnit {
 			Assert.Equal(200, sensorsData.BackEMFData.Filtered.left);
 			Assert.Equal(200, sensorsData.BackEMFData.Raw.right);
 			Assert.Equal(200, sensorsData.BackEMFData.Raw.left);
+			
+			// locator
+			Assert.Equal(190.2f, sensorsData.LocatorData.Position.x);
+			Assert.Equal(85.6f, sensorsData.LocatorData.Position.y);
+			Assert.True(Math.Abs(208.5746868630036f - sensorsData.LocatorData.Position.Magnitude()) < 0.001);
+			Assert.Equal(9.99f, sensorsData.LocatorData.Velocity.x);
+			Assert.Equal(86.4f, sensorsData.LocatorData.Velocity.y);
+			
+			// gyro
+			Assert.Equal(300, sensorsData.GyroData.RotationRate.x);
+			Assert.Equal(300, sensorsData.GyroData.RotationRate.y);
+			Assert.Equal(300, sensorsData.GyroData.RotationRate.z);
+			Assert.Equal(300, sensorsData.GyroData.RotationRateRaw.x);
+			Assert.Equal(300, sensorsData.GyroData.RotationRateRaw.y);
+			Assert.Equal(300, sensorsData.GyroData.RotationRateRaw.z);
 		}
 	}	
 }

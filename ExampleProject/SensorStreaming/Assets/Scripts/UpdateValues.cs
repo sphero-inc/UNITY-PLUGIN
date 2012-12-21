@@ -24,7 +24,10 @@ public class UpdateValues: MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if (SpheroBridge.IsRobotConnected() && !streaming) {
-			SpheroBridge.EnableControllerStreaming(20, 1, 0xF00000000007E000); 
+			SpheroBridge.EnableControllerStreaming(20, 1, 
+				(SpheroDataStreamingMask.IMUAnglesFilteredAll | 
+				SpheroDataStreamingMask.AccelerometerFilteredAll | 
+				SpheroDataStreamingMask.QuaternionAll)); 
 			streaming = true;
 		}	
 	}
