@@ -32,11 +32,6 @@ public class SpheroManager : MonoBehaviour {
 	int m_SpheroLabelWidth = 350;
 	int m_SpheroLabelHeight = 40;
 	int m_SpheroLabelSelected = -1;
-	
-	// Native Java Objects
-	AndroidJavaObject m_RobotProvider;
-	AndroidJavaObject m_PairedRobots;
-	AndroidJavaObject m_ConnectingRobot;
 
 	// Paired Sphero Info
 	int m_PairedRobotCount;
@@ -75,46 +70,34 @@ public class SpheroManager : MonoBehaviour {
 	 * Called if the OS is iOS to immediately try to connect to the robot
 	 */
 	void setupIOS() {
-		SpheroBridge.SetupRobotConnection();	
+		SpheroBridge.SetupRobotConnection();
+		m_RobotConnectingIndex = 1;
+		m_RobotNames = new string[0];
 	}
-	
+
+// Needed for compiling on iOS
+#if UNITY_ANDROID
 	/*
 	 * Called if the OS is Android to show the Connection Scene
 	 */
 	void setupAndroid() {
-		
+
 		// The SDK uses alot of handlers that need a valid Looper in the thread, so set that up here
         using (AndroidJavaClass jc = new AndroidJavaClass("android.os.Looper"))
         {
         	jc.CallStatic("prepare");
         }
 		
-		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RobotProvider"))
-        {
-			// Grab a handle on the RobotProvider
-            m_RobotProvider = jc.CallStatic<AndroidJavaObject>("getDefaultProvider");
-			bool isAdapterEnabled = m_RobotProvider.Call<bool>("isAdapterEnabled");   
-			
-			// Only run this stuff if the adapter is enabled
-			if( isAdapterEnabled ) {
-				m_RobotProvider.Call("findRobots");  
-				m_PairedRobots = m_RobotProvider.Call<AndroidJavaObject>("getRobots");
-				m_PairedRobotCount = m_PairedRobots.Call<int>("size");
-				
-				// Store the robots that are paired into an array
-				m_RobotNames = new string[m_PairedRobotCount];
-				for( int i = 0; i < m_PairedRobotCount; i++ ) {
-					AndroidJavaObject jo = m_PairedRobots.Call<AndroidJavaObject>("get", i);	
-					m_RobotNames[i] = jo.Call<string>("getName");
-				}
-			}
-        }
+		// Search for paired robots
+		SpheroProvider.getSharedProvider().findRobots();
+		m_RobotNames = SpheroProvider.getSharedProvider().getRobotNames();
 		
+		// Sign up for connection notifications
 		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
         {
 			AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
 			jo.Call("addListener", "GUI", "javaMessage");
-		}
+		}	
 		
 		// For debugging UI
 //		m_RobotNames = new string[6];
@@ -137,36 +120,33 @@ public class SpheroManager : MonoBehaviour {
 			
 			// Tell Sphero Provider we have a newly connected robot
 			Sphero[] spheros = new Sphero[1];
-			spheros[0] = new Sphero(m_ConnectingRobot);
+			spheros[0] = new Sphero(SpheroProvider.getSharedProvider().getConnectingRobot());
 			SpheroProvider.getSharedProvider().setConnectedSpheros(spheros);
 				
 			// No longer connecting to a robot
 			m_RobotConnectingIndex = -1;
+			
+			// Remove connection listener
+			using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
+	        {
+				AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
+				jo.Call("removeListener", "GUI");
+			}	
 				
 			// Go to HelloWorld Scene
 			Application.LoadLevel ("HelloWorldScene"); 
 		}
 	}
+#endif	
 	
 	void OnApplicationPause() {
-		// Disconnect robots
-//		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RobotProvider"))
-//		{
-//	        m_RobotProvider = jc.CallStatic<AndroidJavaObject>("getDefaultProvider");
-//			m_RobotProvider.Call("disconnectControlledRobots");	
-//		}
-		
-		// Remove connection listener
-		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
-        {
-			AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
-			jo.Call("removeListener", "GUI");
-		}
+		SpheroProvider.getSharedProvider().disconnectSpheros();
 	}
 	
 	// Update is called once per frame
  	void Update()
     {
+#if UNITY_ANDRDOID
 		if (Input.touchCount != 1)
 		{
 			selected = -1;
@@ -216,6 +196,22 @@ public class SpheroManager : MonoBehaviour {
 				timeTouchPhaseEnded = Time.time;
 			}
 		}
+#elif UNITY_IPHONE
+		if( SpheroBridge.IsRobotConnected() ) {
+			m_Title = "Connection Success";
+			
+			// Tell Sphero Provider we have a newly connected robot
+			Sphero[] spheros = new Sphero[1];
+			spheros[0] = new Sphero();
+			SpheroProvider.getSharedProvider().setConnectedSpheros(spheros);
+				
+			// No longer connecting to a robot
+			m_RobotConnectingIndex = -1;
+				
+			// Go to HelloWorld Scene
+			Application.LoadLevel ("HelloWorldScene"); 
+		}
+#endif
 	}
 	
 	// Called when the GUI should update
@@ -228,36 +224,24 @@ public class SpheroManager : MonoBehaviour {
 		
 		// Set up the scroll view that holds all the Sphero names
 		int scrollY = m_ViewPadding + m_TitleHeight + m_ElementPadding*2;
-		// GUI.skin = optionsSkin;
         windowMargin = new Vector2(m_ViewPadding,scrollY);
         windowRect = new Rect(windowMargin.x, windowMargin.y-15, 
         				 Screen.width - (2*windowMargin.x), Screen.height - (2*windowMargin.y));
         GUI.Window(0, windowRect, (GUI.WindowFunction)DoWindow, "");
 		
 		// Set up the Connect Button
-		//GUI.color = new Color(0.11f,0.56f,1f,1f);
 		int connectBtnX = (Screen.width/2)-(m_ButtonWidth/2);
 		int connectBtnY = Screen.height-m_ViewPadding-m_ButtonHeight;
 		if( GUI.Button(new Rect(connectBtnX,connectBtnY,m_ButtonWidth,m_ButtonHeight), "Connect" )) {
 		
 			// Check if we have a Sphero connected
 			if( m_SpheroLabelSelected >= 0 ) {
-				// Grab a handle on the RobotProvider
-				using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RobotProvider"))
-				{
-					// Connect the selected robot
-	        		m_RobotProvider = jc.CallStatic<AndroidJavaObject>("getDefaultProvider");
-					m_RobotProvider.Call("control", m_SpheroLabelSelected);
-					m_RobotProvider.Call<AndroidJavaObject>("connectControlledRobots");
-					// Save the robot for future calls
-					m_ConnectingRobot = m_PairedRobots.Call<AndroidJavaObject>("get",m_SpheroLabelSelected);
-				}
-			
+				SpheroProvider.getSharedProvider().connect(m_SpheroLabelSelected);
 				// Adjust title info
 				m_RobotConnectingIndex = m_SpheroLabelSelected;
-				m_Title = "Connecting to " + m_RobotNames[m_SpheroLabelSelected];
+				m_Title = "Connecting to " + m_RobotNames[m_SpheroLabelSelected];		
 			}
-		}
+		}			
 		
 		// Only show the connection dialog if we are connecting to a robot
 		if( m_RobotConnectingIndex >= 0 ) {

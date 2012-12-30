@@ -11,21 +11,19 @@ public class Sphero {
 	
 	int m_Color;
 	
+#if UNITY_ANDROID	
 	/*
 	 * Default constructor used for Android 
 	 */ 
-	public Sphero(AndroidJavaObject sphero) {
-		#if UNITY_ANDROID			
+	public Sphero(AndroidJavaObject sphero) {		
 			m_JavaSphero = sphero;
-		#endif
 	}
+#endif
 	
 	/*
 	 * Default constructor used for iOS 
 	 */ 
-	public Sphero() {		
-		m_JavaSphero = null;
-	}
+	public Sphero() {}
 	
 	/*
 	 * Change Sphero's color to desired output
