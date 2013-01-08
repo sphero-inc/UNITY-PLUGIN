@@ -3,16 +3,25 @@ using System.Collections;
 
 public class SpheroConnectionView : MonoBehaviour {
 	
+	// Next Level to load after the balls connect
+	public string m_NextLevel;
+	
+	// Controls how many Spheros you can connect to (Android only)
+	public bool m_MultipleSpheros;
+	
 	// Controls the look and feel of the Connection Scene
 	public GUISkin m_SpheroConnectionSkin;	
 	
 	// Loading image
 	public Texture2D m_Spinner;
-	public Vector2 m_SpinnerSize = new Vector2(128, 128);
-	public float m_SpinnerAngle = 0;
+	Vector2 m_SpinnerSize = new Vector2(128, 128);
+	float m_SpinnerAngle = 0;
 	Vector2 m_SpinnerPosition = new Vector2(0, 0);
 	Vector2 m_SpinnerPivotPos = new Vector2(0, 0);
 	Rect m_SpinnerRect;
+	// Other icons
+	public Texture2D m_CheckMark;
+	public Texture2D m_RedX;
 	
 	// UI Padding Variables
 	int m_ViewPadding = 20;
@@ -26,13 +35,14 @@ public class SpheroConnectionView : MonoBehaviour {
 	int m_TitleWidth = 120;
 	int m_TitleHeight = 40;
 	string m_Title = "Connect to a Sphero";
-	public GUIStyle m_TitleStyle = new GUIStyle();
 	
 	// Sphero Name Label Variable
-	int m_SpheroLabelWidth = 350;
-	int m_SpheroLabelHeight = 40;
+	int m_SpheroLabelWidth = 250;
+	int m_SpheroLabelHeight = 60;
 	int m_SpheroLabelSelected = -1;
-
+	
+	// Sphero Provider
+	SpheroProvider m_SpheroProvider = SpheroProvider.GetSharedProvider();
 	// Paired Sphero Info
 	int m_PairedRobotCount;
 	string[] m_RobotNames;
@@ -51,8 +61,8 @@ public class SpheroConnectionView : MonoBehaviour {
     Vector2 scrollPosition;
 
 	// size of the window and scrollable list
-    public Vector2 windowMargin;
-    public Vector2 listMargin;
+    Vector2 windowMargin = new Vector2(0,0);
+    Vector2 listMargin = new Vector2(40,40);
     private Rect windowRect;
 	
 	// Use this for initialization
@@ -81,6 +91,11 @@ public class SpheroConnectionView : MonoBehaviour {
 	 * Called if the OS is Android to show the Connection Scene
 	 */
 	void setupAndroid() {
+		
+		// Make the spinner smaller to appear next to the clickable list
+		if( m_MultipleSpheros ) {
+			m_SpinnerSize = new Vector2(m_SpheroLabelHeight-10, m_SpheroLabelHeight-10);	
+		}
 
 		// The SDK uses alot of handlers that need a valid Looper in the thread, so set that up here
         using (AndroidJavaClass jc = new AndroidJavaClass("android.os.Looper"))
@@ -89,14 +104,14 @@ public class SpheroConnectionView : MonoBehaviour {
         }
 		
 		// Search for paired robots
-		SpheroProvider.getSharedProvider().findRobots();
-		m_RobotNames = SpheroProvider.getSharedProvider().getRobotNames();
+		m_SpheroProvider.FindRobots();
+		m_RobotNames = m_SpheroProvider.GetRobotNames();
 		
 		// Sign up for connection notifications
 		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
         {
 			AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
-			jo.Call("addListener", "GUI", "javaMessage");
+			jo.Call("addListener", "SpheroConnectionView", "javaMessage");
 		}	
 		
 		// For debugging UI
@@ -111,42 +126,45 @@ public class SpheroConnectionView : MonoBehaviour {
 	
 	public void javaMessage(string message) {
 		if( message.Equals("failed") ) {
+			m_SpheroProvider.SetRobotConnectionState(m_RobotConnectingIndex, Sphero.Connection_State.Failed);
 			m_Title = "Connection Failed";	
-			// No longer connecting to a robot
-			m_RobotConnectingIndex = -1;
 		}
 		else if( message.Equals("success") ) {
-			m_Title = "Connection Success";
 			
-			// Tell Sphero Provider we have a newly connected robot
-			Sphero[] spheros = new Sphero[1];
-			spheros[0] = new Sphero(SpheroProvider.getSharedProvider().getConnectingRobot());
-			SpheroProvider.getSharedProvider().setConnectedSpheros(spheros);
-				
-			// No longer connecting to a robot
-			m_RobotConnectingIndex = -1;
-			
-			// Remove connection listener
-			using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
-	        {
-				AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
-				jo.Call("removeListener", "GUI");
-			}	
-				
-			// Go to HelloWorld Scene
-			Application.LoadLevel ("HelloWorldScene"); 
+			m_SpheroProvider.SetRobotConnectionState(m_RobotConnectingIndex, Sphero.Connection_State.Connected);
+			Sphero sphero = m_SpheroProvider.GetConnectingSphero();
+			m_SpheroProvider.AddConnectedSphero(sphero);
+			// Connect to the robot and move to the next scene designated by the developer
+			if( !m_MultipleSpheros ) {
+				m_Title = "Connection Success";
+				RemoveListenerAndLoadLevel();
+			}
 		}
+		// No longer connecting to a robot
+		m_RobotConnectingIndex = -1;
+	}
+	
+	void RemoveListenerAndLoadLevel() {
+		// Remove connection listener
+		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
+        {
+			AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
+			jo.Call("removeListener", "SpheroConnectionView");
+		}	
+			
+		// Go to HelloWorld Scene
+		Application.LoadLevel (m_NextLevel); 
 	}
 #endif	
 	
 	void OnApplicationPause() {
-		SpheroProvider.getSharedProvider().disconnectSpheros();
+		m_SpheroProvider.DisconnectSpheros();
 	}
 	
 	// Update is called once per frame
  	void Update()
     {
-#if UNITY_ANDRDOID
+#if UNITY_ANDROID
 		if (Input.touchCount != 1)
 		{
 			selected = -1;
@@ -186,6 +204,10 @@ public class SpheroConnectionView : MonoBehaviour {
             if ( selected > -1 )
             {
 	            Debug.Log("Player selected row " + selected);
+				// Sweet!
+				if( m_MultipleSpheros ) {
+					ConnectSphero(selected);
+				}
             }
 			else
 			{
@@ -201,17 +223,30 @@ public class SpheroConnectionView : MonoBehaviour {
 			m_Title = "Connection Success";
 			
 			// Tell Sphero Provider we have a newly connected robot
-			Sphero[] spheros = new Sphero[1];
-			spheros[0] = new Sphero();
-			SpheroProvider.getSharedProvider().setConnectedSpheros(spheros);
+			m_SpheroProvider.AddConnectedSphero(new Sphero());
 				
 			// No longer connecting to a robot
 			m_RobotConnectingIndex = -1;
 				
 			// Go to HelloWorld Scene
-			Application.LoadLevel ("HelloWorldScene"); 
+			Application.LoadLevel (m_NextLevel); 
 		}
 #endif
+	}
+	
+	/*
+	 * Attempt to connect to a Sphero 
+	 */
+	void ConnectSphero(int row) {
+		// Don't connect to more than one at a time
+		if( m_RobotConnectingIndex > -1 ) return;
+		
+		m_SpheroProvider.SetRobotConnectionState(row, Sphero.Connection_State.Connecting);
+		m_SpheroProvider.Connect(row);
+		// Adjust title info
+		m_SpheroLabelSelected = row;
+		m_RobotConnectingIndex = m_SpheroLabelSelected;
+		m_Title = "Connecting to " + m_RobotNames[m_SpheroLabelSelected];		
 	}
 	
 	// Called when the GUI should update
@@ -229,22 +264,29 @@ public class SpheroConnectionView : MonoBehaviour {
         				 Screen.width - (2*windowMargin.x), Screen.height - (2*windowMargin.y));
         GUI.Window(0, windowRect, (GUI.WindowFunction)DoWindow, "");
 		
-		// Set up the Connect Button
+		// Set up the Connect or Done Button
+		string buttonLabel = "Connect";
+		if( m_MultipleSpheros ) {
+			buttonLabel = "Done";	
+		}
 		int connectBtnX = (Screen.width/2)-(m_ButtonWidth/2);
 		int connectBtnY = Screen.height-m_ViewPadding-m_ButtonHeight;
-		if( GUI.Button(new Rect(connectBtnX,connectBtnY,m_ButtonWidth,m_ButtonHeight), "Connect" )) {
+		if( GUI.Button(new Rect(connectBtnX,connectBtnY,m_ButtonWidth,m_ButtonHeight), buttonLabel )) {
 		
+			// Check if we are done adding robots
+			if( buttonLabel.Equals("Done") ){
+#if UNITY_ANDROID				
+				RemoveListenerAndLoadLevel();
+#endif				
+			}
 			// Check if we have a Sphero connected
-			if( m_SpheroLabelSelected >= 0 ) {
-				SpheroProvider.getSharedProvider().connect(m_SpheroLabelSelected);
-				// Adjust title info
-				m_RobotConnectingIndex = m_SpheroLabelSelected;
-				m_Title = "Connecting to " + m_RobotNames[m_SpheroLabelSelected];		
+			else if( m_RobotConnectingIndex >= 0 ) {
+				ConnectSphero(m_SpheroLabelSelected);	
 			}
 		}			
 		
 		// Only show the connection dialog if we are connecting to a robot
-		if( m_RobotConnectingIndex >= 0 ) {
+		if( m_RobotConnectingIndex >= 0 && !m_MultipleSpheros ) {
 			GUI.Box(m_SpinnerRect,"");
 			
 			m_SpinnerPosition.x = Screen.width/2;
@@ -272,8 +314,44 @@ public class SpheroConnectionView : MonoBehaviour {
 		
         scrollPosition = GUI.BeginScrollView (rScrollFrame, scrollPosition, rList, false, false);
             
-		// Show a grid of Spheros to connect to
- 		m_SpheroLabelSelected = GUI.SelectionGrid(new Rect(0,0,m_SpheroLabelWidth,m_SpheroLabelHeight*m_RobotNames.Length),m_SpheroLabelSelected,m_RobotNames,1,"toggle");
+		// Show a list of Spheros that you can connect to
+		if( m_MultipleSpheros ) {
+			// Create rows of spinners
+			for( int i = 0; i < m_RobotNames.Length; i++ ) {
+				m_SpinnerPosition.x = (m_SpinnerSize.x/2);
+				m_SpinnerPosition.y = (i*m_SpheroLabelHeight)+(m_SpinnerSize.y/2);
+				// Rotate the object
+				m_SpinnerRect = new Rect(m_SpinnerPosition.x - m_SpinnerSize.x * 0.5f, m_SpinnerPosition.y - m_SpinnerSize.y * 0.5f, m_SpinnerSize.x, m_SpinnerSize.y);
+	        	m_SpinnerPivotPos = new Vector2(m_SpinnerRect.xMin + m_SpinnerRect.width * 0.5f, m_SpinnerRect.yMin + m_SpinnerRect.height * 0.5f);
+				
+				Sphero sphero = m_SpheroProvider.GetPairedSpheros()[i];
+				// Draw the spinner rotating if it is connecting
+				if( sphero.ConnectionState == Sphero.Connection_State.Connecting ) {
+			        Matrix4x4 matrixBackup = GUI.matrix;
+			        GUIUtility.RotateAroundPivot(m_SpinnerAngle, m_SpinnerPivotPos);
+			        GUI.DrawTexture(m_SpinnerRect, m_Spinner);
+			        GUI.matrix = matrixBackup;
+					m_SpinnerAngle+=3;
+				}
+				else if( sphero.ConnectionState == Sphero.Connection_State.Connected ) {
+					GUI.DrawTexture(m_SpinnerRect, m_CheckMark);
+				}
+				else if( sphero.ConnectionState == Sphero.Connection_State.Failed ) {
+					GUI.DrawTexture(m_SpinnerRect, m_RedX);
+				}
+				// Otherwise draw it normally
+				else {
+					GUI.DrawTexture(m_SpinnerRect, m_Spinner);
+				}
+
+				// Draw the Sphero Label
+				GUI.Label(new Rect(m_SpinnerSize.x, i*m_SpheroLabelHeight, m_SpheroLabelWidth, m_SpheroLabelHeight), m_RobotNames[i]);
+			}
+		}
+		// Show a grid of potential Spheros to connect to (only can connect to one)
+		else {
+ 			m_SpheroLabelSelected = GUI.SelectionGrid(new Rect(0,0,m_SpheroLabelWidth,m_SpheroLabelHeight*m_RobotNames.Length),m_SpheroLabelSelected,m_RobotNames,1,"toggle");
+		}
 		
         GUI.EndScrollView();
 	}

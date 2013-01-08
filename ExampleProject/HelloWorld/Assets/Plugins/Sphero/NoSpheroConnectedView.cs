@@ -3,13 +3,18 @@ using System.Collections;
 
 public class NoSpheroConnectedView : MonoBehaviour {
 	
+	// Scene to load after iOS connection success
+	public string m_NextLevel;
+	
 	// Controls the look and feel of the Connection Scene
-	public GUISkin m_SpheroConnectionSkin;	
+	public GUISkin m_GetASpheroButtonSkin;	
+	public GUISkin m_ConnectButtonSkin;	
 	
 	// NoSpheroConnected Image
 	public Texture2D m_Background;
 	public string m_GetASpheroURL = "http://gosphero.com";
 	public Texture2D m_GetASpheroTexture;
+	public Texture2D m_ConnectTexture;
 	float m_BackgroundAspectRatio;
 	// Loading image
 	public Texture2D m_Spinner;
@@ -29,6 +34,9 @@ public class NoSpheroConnectedView : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {		
+		
+		//lastLevel = Application.loadedLevel;
+		
 		// Try to connect on iOS
 		#if UNITY_ANDROID
 		#elif UNITY_IPHONE
@@ -38,7 +46,7 @@ public class NoSpheroConnectedView : MonoBehaviour {
 	}
 	
 	void OnApplicationPause() {
-		SpheroProvider.getSharedProvider().disconnectSpheros();
+		SpheroProvider.GetSharedProvider().DisconnectSpheros();
 	}
 	
 	// Update is called once per frame
@@ -47,7 +55,7 @@ public class NoSpheroConnectedView : MonoBehaviour {
 	// Called when the GUI should update
 	void OnGUI() {
 		
-		GUI.skin = m_SpheroConnectionSkin;
+		GUI.skin = m_GetASpheroButtonSkin;
 		
 		// Draw No Sphero Connected Background
 		int backgroundWidth = 0;
@@ -68,8 +76,20 @@ public class NoSpheroConnectedView : MonoBehaviour {
 		Rect backgroundRect = new Rect(backgroundX,backgroundY,backgroundWidth,backgroundHeight);
 		GUI.DrawTexture(backgroundRect, m_Background);
 		
+		// Draw the Get A Sphero Button
+		float buttonWidth = backgroundWidth*0.3f;
+		float buttonHeight = ((backgroundWidth*0.25f)/(float)m_GetASpheroTexture.width)*m_GetASpheroTexture.height;
+		float getASpheroButtonX = backgroundX+(backgroundWidth*0.605f);
+		float getASpheroButtonY = backgroundY+(backgroundHeight*0.85f) - (buttonHeight/2);
+		// If the get a Sphero button is clicked
+		if( GUI.Button (new Rect(getASpheroButtonX, getASpheroButtonY,buttonWidth,buttonHeight), "") ) {
+			Application.OpenURL(m_GetASpheroURL);
+		}
+		
+#if UNITY_IPHONE		
 		// iOS has a spinner, and Android has an extra button
-		m_SpinnerSize = new Vector2(backgroundWidth*0.08f,backgroundWidth*0.08f);
+		int spinnerDim = (int)(backgroundWidth*0.07);
+		m_SpinnerSize = new Vector2(spinnerDim,spinnerDim);
 		m_SpinnerPosition.x = backgroundX+(backgroundWidth*0.115f);
 		m_SpinnerPosition.y = backgroundY+(backgroundHeight*0.85f);
 		// Rotate the object
@@ -82,15 +102,17 @@ public class NoSpheroConnectedView : MonoBehaviour {
         GUI.DrawTexture(m_SpinnerRect, m_Spinner);
         GUI.matrix = matrixBackup;
 		m_SpinnerAngle = (m_SpinnerAngle + 3) % 360;
-		
+#else
+		GUI.skin = m_ConnectButtonSkin;
 		// Draw the Get A Sphero Button
-		float buttonWidth = backgroundWidth*0.3f;
-		float buttonHeight = ((backgroundWidth*0.25f)/(float)m_GetASpheroTexture.width)*m_GetASpheroTexture.height;
-		float getASpheroButtonX = backgroundX+(backgroundWidth*0.6f);
-		float getASpheroButtonY = m_SpinnerPosition.y - (buttonHeight/2);
+		buttonWidth = backgroundWidth*0.3f;
+		buttonHeight = ((backgroundWidth*0.25f)/(float)m_GetASpheroTexture.width)*m_GetASpheroTexture.height;
+		getASpheroButtonX = backgroundX+(backgroundWidth*0.1f);
+		getASpheroButtonY = backgroundY+(backgroundHeight*0.85f) - (buttonHeight/2);
 		// If the get a Sphero button is clicked
-		if( GUI.Button (new Rect(getASpheroButtonX, getASpheroButtonY,buttonWidth,buttonHeight),m_GetASpheroTexture) ) {
-			Application.OpenURL(m_GetASpheroURL);
+		if( GUI.Button (new Rect(getASpheroButtonX, getASpheroButtonY,buttonWidth,buttonHeight), "") ) {
+			Application.LoadLevel("SpheroConnectionScene");
 		}
+#endif		
 	}
 }

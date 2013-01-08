@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class HelloWorld : MonoBehaviour {
 	
@@ -8,7 +9,7 @@ public class HelloWorld : MonoBehaviour {
 	const int BLACK = unchecked((int)0xFF000000);
 	
 	// Connected Sphero Robot
-	Sphero m_Sphero;
+	List<Sphero> m_SpheroList;
 	
 	// Counter to determine if Sphero should have color or not
 	int m_BlinkCounter;
@@ -16,25 +17,27 @@ public class HelloWorld : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		// Get Connected Sphero
-		m_Sphero = SpheroProvider.getSharedProvider().getConnectedSpheros()[0];
+		m_SpheroList = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		m_BlinkCounter++;
 		if( m_BlinkCounter % 20 == 0 ) {
-			// Set the Sphero color to blue 
-			if( m_Sphero.getColor() == BLACK ) {
-				m_Sphero.setRGB(BLUE);
-			}
-			else {
-				m_Sphero.setRGB(BLACK);	
+			foreach( Sphero sphero in m_SpheroList ) {
+				// Set the Sphero color to blue 
+				if( sphero.Color == BLACK ) {
+					sphero.SetRGBLED(BLUE);
+				}
+				else {
+					sphero.SetRGBLED(BLACK);	
+				}
 			}
 		}
 	}
 	
 	void OnApplicationPause() {
 		// Disconnect robots
-		SpheroProvider.getSharedProvider().disconnectSpheros();
+		SpheroProvider.GetSharedProvider().DisconnectSpheros();
 	}
 }

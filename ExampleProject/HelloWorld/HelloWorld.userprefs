@@ -1,8 +1,12 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Plugins/Sphero/NoSpheroConnectedView.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Plugins/Sphero/SpheroConnectionView.cs">
     <Files>
-      <File FileName="Assets/Plugins/Sphero/NoSpheroConnectedView.cs" Line="84" Column="35" />
+      <File FileName="Assets/Plugins/Sphero/NoSpheroConnectedView.cs" Line="49" Column="39" />
+      <File FileName="Assets/Plugins/Sphero/SpheroConnectionView.cs" Line="326" Column="40" />
+      <File FileName="Assets/Plugins/Sphero/SpheroProvider.cs" Line="17" Column="26" />
+      <File FileName="Assets/Plugins/Sphero/Sphero.cs" Line="16" Column="7" />
+      <File FileName="Assets/Scripts/HelloWorld.cs" Line="33" Column="22" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
