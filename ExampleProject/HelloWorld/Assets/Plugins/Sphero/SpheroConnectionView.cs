@@ -66,7 +66,7 @@ public class SpheroConnectionView : MonoBehaviour {
     private Rect windowRect;
 	
 	// Use this for initialization
-	void Start () {		
+	void Start () {	
 		#if UNITY_ANDROID
 			setupAndroid();
 		#elif UNITY_IPHONE
@@ -91,7 +91,7 @@ public class SpheroConnectionView : MonoBehaviour {
 	 * Called if the OS is Android to show the Connection Scene
 	 */
 	void setupAndroid() {
-		
+
 		// Make the spinner smaller to appear next to the clickable list
 		if( m_MultipleSpheros ) {
 			m_SpinnerSize = new Vector2(m_SpheroLabelHeight-10, m_SpheroLabelHeight-10);	
@@ -107,11 +107,14 @@ public class SpheroConnectionView : MonoBehaviour {
 		m_SpheroProvider.FindRobots();
 		m_RobotNames = m_SpheroProvider.GetRobotNames();
 		
+		SpheroDeviceMessenger messenger = SpheroDeviceMessenger.SharedInstance;
+		
 		// Sign up for connection notifications
 		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
         {
 			AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
 			jo.Call("addListener", "SpheroConnectionView", "javaMessage");
+			jo.Call("testCode");
 		}	
 		
 		// For debugging UI
@@ -165,6 +168,14 @@ public class SpheroConnectionView : MonoBehaviour {
  	void Update()
     {
 #if UNITY_ANDROID
+		
+		// TEST - DELETE FOR PRODUCTION
+		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
+        {
+			AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
+			jo.Call("testCode");
+		}	
+		
 		if (Input.touchCount != 1)
 		{
 			selected = -1;
@@ -205,7 +216,7 @@ public class SpheroConnectionView : MonoBehaviour {
             {
 	            Debug.Log("Player selected row " + selected);
 				// Sweet!
-				if( m_MultipleSpheros ) {
+				if( m_MultipleSpheros && m_RobotConnectingIndex < 0 ) {
 					ConnectSphero(selected);
 				}
             }
