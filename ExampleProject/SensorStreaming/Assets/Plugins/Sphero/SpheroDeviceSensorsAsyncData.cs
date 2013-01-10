@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 public class SpheroDeviceSensorsAsyncData : SpheroDeviceAsyncMessage
 {
 	private int frameCount;
