@@ -40,6 +40,16 @@ public class NoSpheroConnectedView : MonoBehaviour {
 		// Try to connect on iOS
 		#if UNITY_ANDROID
 		#elif UNITY_IPHONE
+			
+		#else
+			// Pop-up message that Sphero doesn't work with this platform?
+		#endif
+	}
+	
+	void OnLevelWasLoaded () { 
+		#if UNITY_ANDROID
+		#elif UNITY_IPHONE
+			SpheroBridge.SetupRobotConnection();	
 		#else
 			// Pop-up message that Sphero doesn't work with this platform?
 		#endif
@@ -50,7 +60,17 @@ public class NoSpheroConnectedView : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
- 	void Update(){}
+ 	void Update(){
+#if UNITY_IPHONE
+		if( SpheroBridge.IsRobotConnected() ) {
+			// Tell Sphero Provider we have a newly connected robot
+			SpheroProvider.GetSharedProvider().AddConnectedSphero(new Sphero());
+				
+			// Go to HelloWorld Scene
+			Application.LoadLevel (m_NextLevel); 
+		}
+#endif
+	}
 	
 	// Called when the GUI should update
 	void OnGUI() {

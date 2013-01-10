@@ -19,6 +19,6 @@ include $(CLEAR_VARS)
 LOCAL_LDLIBS := -llog \
 
 LOCAL_MODULE    := unity_bridge
-LOCAL_SRC_FILES := orbotix_unity_UnityConnectionMessageDispatcher.cpp
+LOCAL_SRC_FILES := orbotix_unity_UnityBridge.cpp
 
 include $(BUILD_SHARED_LIBRARY)

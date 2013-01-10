@@ -76,13 +76,31 @@ public class SpheroConnectionView : MonoBehaviour {
 		#endif
 	}
 	
+	
+	void OnLevelWasLoaded () { 
+		#if UNITY_ANDROID
+			// Sign up for connection notifications
+			using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
+	        {
+				AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
+				jo.Call("addListener", "SpheroConnectionView", "javaMessage");
+			}	
+			m_RobotNames = m_SpheroProvider.GetRobotNames();
+		#elif UNITY_IPHONE
+			setupIOS();
+		#else
+			// Pop-up message that Sphero doesn't work with this platform?
+		#endif
+	}
+	
 	/*
 	 * Called if the OS is iOS to immediately try to connect to the robot
 	 */
 	void setupIOS() {
-		SpheroBridge.SetupRobotConnection();
-		m_RobotConnectingIndex = 1;
-		m_RobotNames = new string[0];
+//		SpheroBridge.SetupRobotConnection();
+//		m_RobotConnectingIndex = 1;
+//		m_RobotNames = new string[0];
+		Application.LoadLevel("NoSpheroConnectedScene");
 	}
 
 // Needed for compiling on iOS
@@ -107,14 +125,11 @@ public class SpheroConnectionView : MonoBehaviour {
 		m_SpheroProvider.FindRobots();
 		m_RobotNames = m_SpheroProvider.GetRobotNames();
 		
-		SpheroDeviceMessenger messenger = SpheroDeviceMessenger.SharedInstance;
-		
 		// Sign up for connection notifications
 		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
         {
 			AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
 			jo.Call("addListener", "SpheroConnectionView", "javaMessage");
-			jo.Call("testCode");
 		}	
 		
 		// For debugging UI
@@ -168,13 +183,6 @@ public class SpheroConnectionView : MonoBehaviour {
  	void Update()
     {
 #if UNITY_ANDROID
-		
-		// TEST - DELETE FOR PRODUCTION
-		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
-        {
-			AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
-			jo.Call("testCode");
-		}	
 		
 		if (Input.touchCount != 1)
 		{
@@ -291,7 +299,7 @@ public class SpheroConnectionView : MonoBehaviour {
 #endif				
 			}
 			// Check if we have a Sphero connected
-			else if( m_RobotConnectingIndex >= 0 ) {
+			else if( m_SpheroLabelSelected >= 0 ) {
 				ConnectSphero(m_SpheroLabelSelected);	
 			}
 		}			

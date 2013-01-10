@@ -7,6 +7,10 @@ public class Sphero {
 // How do we manage multiple robots from here?	
 #if UNITY_ANDROID	
 	AndroidJavaObject m_JavaSphero;
+	AndroidJavaObject m_UnityBridge = (new AndroidJavaClass("orbotix.unity.UnityBridge")).CallStatic<AndroidJavaObject>("sharedBridge");
+	
+	// Cached Java Classes for efficient calls
+	AndroidJavaClass m_RGBLEDOutput = new AndroidJavaClass("orbotix.robot.base.RGBLEDOutputCommand");
 #endif
 	
 	// Bluetooth Info Inner Data Structure Class
@@ -109,9 +113,7 @@ public class Sphero {
 		int blue = color & 0x000000FF;
 		
 		#if UNITY_ANDROID	
-			using( AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RGBLEDOutputCommand") ) {
-				jc.CallStatic("sendCommand",m_JavaSphero,red,green,blue);
-			}
+			m_RGBLEDOutput.CallStatic("sendCommand",m_JavaSphero,red,green,blue);
 		#elif UNITY_IPHONE
 			SpheroBridge.SetRGB(red/255,green/255,blue/255);
 		#endif
@@ -145,5 +147,45 @@ public class Sphero {
 	 */
 	public string GetName() {
 		return m_BluetoothInfo.Name;
+	}
+	
+	/**
+	 * Enable controller data streaming with infinite packets
+     * @param divisor Divisor of the maximum sensor sampling rate (400 Hz)
+     * @param packetFrames Number of samples created on the device before it sends a packet to the phone with samples
+     * @param sensorMask Bitwise selector of data sources to stream
+	 */
+	public void EnableControllerStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask) {		
+		#if UNITY_ANDROID	
+			m_UnityBridge.Call("enableControllerStreaming",m_JavaSphero,(int)divisor,(int)packetFrames,(long)sensorMask);
+		#elif UNITY_IPHONE
+			SpheroBridge.EnableControllerStreaming(divisor, packetFrames, sensorMask);
+		#endif
+	}
+	
+	/**
+	 * Disable controller data streaming
+	 */
+	public void DisableControllerStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask) {
+		#if UNITY_ANDROID	
+			m_UnityBridge.Call("disableControllerStreaming",m_JavaSphero);
+		#elif UNITY_IPHONE
+			SpheroBridge.DisableControllerStreaming();
+		#endif
+	}
+	
+	/**
+	 * Start Streaming Data to Unity
+     * @param divisor Divisor of the maximum sensor sampling rate (400 Hz)
+     * @param packetFrames Number of samples created on the device before it sends a packet to the phone with samples
+     * @param sensorMask Bitwise selector of data sources to stream
+     * @param packetCount Packet count (set to 0 for unlimited streaming) 
+	 */
+	public void SetDataStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask, ushort packetCount) {
+		#if UNITY_ANDROID	
+			m_UnityBridge.Call("setDataStreaming",m_JavaSphero, divisor, packetFrames, sensorMask, packetCount);
+		#elif UNITY_IPHONE
+			SpheroBridge.SetDataStreaming(divisor, packetFrames, sensorMask, (byte)packetCount);
+		#endif
 	}
 }

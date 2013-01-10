@@ -2,6 +2,8 @@ package orbotix.unity;
 
 import java.util.HashMap;
 
+import android.util.Log;
+
 import orbotix.robot.base.BackLEDOutputCommand;
 import orbotix.robot.base.DeviceAsyncData;
 import orbotix.robot.base.DeviceMessenger;
@@ -24,7 +26,7 @@ public class UnityBridge {
     /**
      * Holds the profile for updating data streaming for multiple robots
      */
-    HashMap<Robot, RobotDataStreamingProfile> mRobotDataStreamingProfiles = new HashMap<Robot, RobotDataStreamingProfile>();
+    private HashMap<Robot, RobotDataStreamingProfile> mRobotDataStreamingProfiles = new HashMap<Robot, RobotDataStreamingProfile>();
 	
 	static {
 		System.loadLibrary("unity_bridge");
@@ -55,9 +57,11 @@ public class UnityBridge {
 		// Remove old profile
 		if( mRobotDataStreamingProfiles.containsKey(robot) ) {
 			mRobotDataStreamingProfiles.remove(robot);
+			DeviceMessenger.getInstance().removeAsyncDataListener(robot, mDataListener);
 		}
 		// Add the robot to the profile
 		RobotDataStreamingProfile robotDataStreamingProfile = new RobotDataStreamingProfile(divisor, packetFrames, sensorMask, packetCount);
+		DeviceMessenger.getInstance().addAsyncDataListener(robot, mDataListener);
 		mRobotDataStreamingProfiles.put(robot, robotDataStreamingProfile);
 		SetDataStreamingCommand.sendCommand(robot, divisor, packetFrames, sensorMask, robotDataStreamingProfile.getPacketCount());
 	}
@@ -69,7 +73,7 @@ public class UnityBridge {
      * @param packetFrames Number of samples created on the device before it sends a packet to the phone with samples
      * @param sensorMask Bitwise selector of data sources to stream
 	 */
-	public void enableControllerStreamingWithSampleRateDivisor(Robot robot, int divisor, int packetFrames, long sensorMask) {
+	public void enableControllerStreaming(Robot robot, int divisor, int packetFrames, long sensorMask) {
 		// Turn off stabilization and turn on back LED
 		StabilizationCommand.sendCommand(robot, false);
 		BackLEDOutputCommand.sendCommand(robot, 1.0f);
@@ -89,6 +93,7 @@ public class UnityBridge {
 		SetDataStreamingCommand.sendCommand(robot,0,0,0,0);
 		if( mRobotDataStreamingProfiles.containsKey(robot) ) {
 			mRobotDataStreamingProfiles.remove(robot);
+			DeviceMessenger.getInstance().removeAsyncDataListener(robot, mDataListener);
 		}
 	}
 	
@@ -119,7 +124,9 @@ public class UnityBridge {
 	                    	dataStreamingProfile.resetPacketCounter();
 	                    }
 	                }
-	                UnityBridge.this.handleDataStreaming(""+dataStreamingProfile.getPacketCounter());
+	                int ctr = dataStreamingProfile.getPacketCounter();
+	                String mockMsg = "{\"class\":\"DeviceSensorsAsyncData\",\"timeStamp\":123456,\"frameCount\":2,\"mas\":17293822572867608672,\"dataFrames\":[{\"class\":\"DeviceSensorsData\",\"accelerometerData\":{\"class\":\"AccelerometerData\",\"normalized.x\":1.23,\"normalized.y\":1.23,\"normalized.z\":1.23,\"accelerationRaw.x\":4096,\"accelerationRaw.y\":4096,\"accelerationRaw.z\":4096},\"attitudeData\":{\"class\":\"AttitudeData\",\"pitch\":45,\"roll\":180,\"yaw\":270},\"quaternionData\":{\"class\":\"QuaternionData\",\"quaternions.q0\":"+ctr+",\"quaternions.q1\":0.7,\"quaternions.q2\":0.3,\"quaternions.q3\":1},\"backEMFData\":{\"class\":\"BackEMFData\",\"filtered.rightMotor\":200,\"filtered.leftMotor\":200,\"raw.rightMotor\":200,\"raw.leftMotor\":200},\"locatorData\":{\"class\":\"LocatorData\",\"position.x\":190.2,\"position.y\":85.6,\"velocity.x\":9.99,\"velocity.y\":86.4},\"gyroData\":{\"class\":\"GyroData\",\"rotationRate.x\":300,\"rotationRate.y\":300,\"rotationRate.z\":300,\"rotationRateRaw.x\":300,\"rotationRateRaw.y\":300,\"rotationRateRaw.z\":300}},{\"class\":\"DeviceSensorsData\",\"accelerometerData\":{\"class\":\"AccelerometerData\",\"normalized.x\":1.23,\"normalized.y\":1.23,\"normalized.z\":1.23},\"attitudeData\":{\"class\":\"AttitudeData\",\"pitch\":45,\"roll\":180,\"yaw\":270},\"quaternionData\":{\"class\":\"QuaternionData\",\"quaternions.q0\":0.3,\"quaternions.q1\":0.7,\"quaternions.q2\":0.3,\"quaternions.q3\":1},\"backEMFData\":{\"class\":\"BackEMFData\",\"filtered.rightMotor\":200,\"filtered.leftMotor\":200,\"raw.rightMotor\":200,\"raw.leftMotor\":200},\"locatorData\":{\"class\":\"LocatorData\",\"position.x\":190.2,\"position.y\":85.6,\"velocity.x\":9.99,\"velocity.y\":86.4},\"gyroData\":{\"class\":\"GyroData\",\"rotationRate.x\":300,\"rotationRate.y\":300,\"rotationRate.z\":300,\"rotationRateRaw.x\":300,\"rotationRateRaw.y\":300,\"rotationRateRaw.z\":300}}]}";
+	                UnityBridge.sharedBridge().handleDataStreaming(mockMsg);
             	}
             	
             	// Call Encoder!

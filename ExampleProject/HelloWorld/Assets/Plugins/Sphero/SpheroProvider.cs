@@ -13,12 +13,10 @@ public class SpheroProvider {
 #endif
 	
 	// Robots
-	private List<Sphero> m_ConnectedSpheros = new List<Sphero>();
 	Sphero[] m_PairedSpheros;
 	
+	// The Sphero that is currently attempting to connect
 	Sphero m_ConnectingSphero;
-	
-	int m_PairedRobotCount = 0;
 	
 	public SpheroProvider() {}
 	
@@ -34,14 +32,30 @@ public class SpheroProvider {
 	 * Get the robots that were connected by the Sphero Connection Scene 
 	 */  
 	public List<Sphero> GetConnectedSpheros() {
-		return m_ConnectedSpheros;
+		List<Sphero> connectedSpheros = new List<Sphero>();
+		#if UNITY_ANDROID
+			foreach( Sphero sphero in m_PairedSpheros ) {
+				if( sphero.ConnectionState == Sphero.Connection_State.Connected ) {
+					connectedSpheros.Add(sphero);	
+				}
+			}
+		#elif UNITY_IOS
+			connectedSpheros.Add(m_PairedSpheros[0]);
+			return connectedSpheros;
+		#endif		
 	}
 	
 	/*
 	 * ONLY TO BE USED BY SPHERO CONNECTION SCENE 
 	 */
 	public void AddConnectedSphero(Sphero sphero) {
-		m_ConnectedSpheros.Add(sphero);
+		sphero.ConnectionState = Sphero.Connection_State.Connected;
+		#if UNITY_ANDROID
+			// Needs to be changed in the future
+		#elif UNITY_IPHONE						
+			m_PairedSpheros = new Sphero[1];
+			m_PairedSpheros[0] = sphero;
+		#endif
 	}
 	
 	/*
@@ -53,13 +67,6 @@ public class SpheroProvider {
 			using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RobotProvider"))
 			{
 		        jc.CallStatic<AndroidJavaObject>("getDefaultProvider").Call("disconnectControlledRobots");	
-			}	
-		
-			// Remove connection listener
-			using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
-	        {
-				AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
-				jo.Call("removeListener", "GUI");
 			}	
 		#elif UNITY_IPHONE
 		 	
@@ -79,15 +86,15 @@ public class SpheroProvider {
 			if( IsAdapterEnabled() ) {
 				m_RobotProvider.Call("findRobots");  
 				AndroidJavaObject pairedRobots = m_RobotProvider.Call<AndroidJavaObject>("getRobots");
-				m_PairedRobotCount = pairedRobots.Call<int>("size");
+				int pairedRobotCount = pairedRobots.Call<int>("size");
 				// Initialize Sphero array
-				m_PairedSpheros = new Sphero[m_PairedRobotCount];
+				m_PairedSpheros = new Sphero[pairedRobotCount];
 				// Create Sphero objects for the Paired Spheros
-				for( int i = 0; i < m_PairedRobotCount; i++ ) {
+				for( int i = 0; i < pairedRobotCount; i++ ) {
 					// Set up the Sphero objects
 					AndroidJavaObject robot = pairedRobots.Call<AndroidJavaObject>("get",i);
 					string bt_name = robot.Call<string>("getName");
-					string bt_address = robot.Call<string>("getBluetoothName");
+					string bt_address = robot.Call<string>("getUniqueId");
 					m_PairedSpheros[i] = new Sphero(robot, bt_name, bt_address);
 				}
 			}
@@ -119,9 +126,9 @@ public class SpheroProvider {
 	/* Grab the robot names from Java array */
 	public string[] GetRobotNames() {
 		// Store the robots that are paired into an array
-		string[] robotNames = new string[m_PairedRobotCount];
+		string[] robotNames = new string[m_PairedSpheros.Length];
 #if UNITY_ANDROID		
-		for( int i = 0; i < m_PairedRobotCount; i++ ) {
+		for( int i = 0; i < m_PairedSpheros.Length; i++ ) {
 			robotNames[i] = m_PairedSpheros[i].GetName();
 		}
 #endif		
