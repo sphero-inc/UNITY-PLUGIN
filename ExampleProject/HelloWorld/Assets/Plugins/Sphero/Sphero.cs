@@ -4,13 +4,17 @@ using System.Runtime.InteropServices;
 
 public class Sphero {
 	
-// How do we manage multiple robots from here?	
 #if UNITY_ANDROID	
-	AndroidJavaObject m_JavaSphero;
-	AndroidJavaObject m_UnityBridge = (new AndroidJavaClass("orbotix.unity.UnityBridge")).CallStatic<AndroidJavaObject>("sharedBridge");
+	private AndroidJavaObject m_AndroidJavaSphero;
+	public AndroidJavaObject AndroidJavaSphero
+    {
+		get{ return this.m_AndroidJavaSphero; }
+    }
+	
+	private AndroidJavaObject m_UnityBridge = (new AndroidJavaClass("orbotix.unity.UnityBridge")).CallStatic<AndroidJavaObject>("sharedBridge");
 	
 	// Cached Java Classes for efficient calls
-	AndroidJavaClass m_RGBLEDOutput = new AndroidJavaClass("orbotix.robot.base.RGBLEDOutputCommand");
+	private AndroidJavaClass m_RGBLEDOutput = new AndroidJavaClass("orbotix.robot.base.RGBLEDOutputCommand");
 #endif
 	
 	// Bluetooth Info Inner Data Structure Class
@@ -57,14 +61,14 @@ public class Sphero {
 	 * Default constructor used for Android 
 	 */ 
 	public Sphero(AndroidJavaObject sphero) {		
-		m_JavaSphero = sphero;
+		m_AndroidJavaSphero = sphero;
 	}
 	
 	/*
 	 * More detailed constructor used for Android 
 	 */ 
 	public Sphero(AndroidJavaObject sphero, string bt_name, string bt_address) {		
-		m_JavaSphero = sphero;
+		m_AndroidJavaSphero = sphero;
 		m_BluetoothInfo = new BluetoothInfo(bt_name, bt_address);
 	}
 #endif
@@ -83,7 +87,7 @@ public class Sphero {
 	public void SetRGBLED(float red, float green, float blue) {
 		#if UNITY_ANDROID	
 			using( AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RGBLEDOutputCommand") ) {
-				jc.CallStatic("sendCommand",m_JavaSphero,red*255,green*255,blue*255);
+				jc.CallStatic("sendCommand",m_AndroidJavaSphero,red*255,green*255,blue*255);
 			}
 		#elif UNITY_IPHONE
 			SpheroBridge.SetRGB(red,green,blue);
@@ -113,7 +117,7 @@ public class Sphero {
 		int blue = color & 0x000000FF;
 		
 		#if UNITY_ANDROID	
-			m_RGBLEDOutput.CallStatic("sendCommand",m_JavaSphero,red,green,blue);
+			m_RGBLEDOutput.CallStatic("sendCommand",m_AndroidJavaSphero,red,green,blue);
 		#elif UNITY_IPHONE
 			SpheroBridge.SetRGB(red/255,green/255,blue/255);
 		#endif
@@ -157,7 +161,7 @@ public class Sphero {
 	 */
 	public void EnableControllerStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask) {		
 		#if UNITY_ANDROID	
-			m_UnityBridge.Call("enableControllerStreaming",m_JavaSphero,(int)divisor,(int)packetFrames,(long)sensorMask);
+			m_UnityBridge.Call("enableControllerStreaming",m_AndroidJavaSphero,(int)divisor,(int)packetFrames,(long)sensorMask);
 		#elif UNITY_IPHONE
 			SpheroBridge.EnableControllerStreaming(divisor, packetFrames, sensorMask);
 		#endif
@@ -168,7 +172,7 @@ public class Sphero {
 	 */
 	public void DisableControllerStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask) {
 		#if UNITY_ANDROID	
-			m_UnityBridge.Call("disableControllerStreaming",m_JavaSphero);
+			m_UnityBridge.Call("disableControllerStreaming",m_AndroidJavaSphero);
 		#elif UNITY_IPHONE
 			SpheroBridge.DisableControllerStreaming();
 		#endif
@@ -183,7 +187,7 @@ public class Sphero {
 	 */
 	public void SetDataStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask, ushort packetCount) {
 		#if UNITY_ANDROID	
-			m_UnityBridge.Call("setDataStreaming",m_JavaSphero, divisor, packetFrames, sensorMask, packetCount);
+			m_UnityBridge.Call("setDataStreaming",m_AndroidJavaSphero, divisor, packetFrames, sensorMask, packetCount);
 		#elif UNITY_IPHONE
 			SpheroBridge.SetDataStreaming(divisor, packetFrames, sensorMask, (byte)packetCount);
 		#endif

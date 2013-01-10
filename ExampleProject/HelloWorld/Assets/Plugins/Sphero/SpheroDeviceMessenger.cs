@@ -57,7 +57,7 @@ public class SpheroDeviceMessenger  {
 	[MonoPInvokeCallback (typeof (ReceiveDeviceMessageDelegate))]
 	protected static void ReceiveDeviceMessage(string encodedMessage) 
 	{
-		// Decode the stirng into an object
+		// Decode the string into an object
 		SpheroDeviceMessage message = SpheroDeviceMessageDecoder.messageFromEncodedString(encodedMessage);
 		
 		// Pass it on to event handlers
