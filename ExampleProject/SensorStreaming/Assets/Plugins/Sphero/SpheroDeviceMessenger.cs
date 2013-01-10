@@ -57,16 +57,19 @@ public class SpheroDeviceMessenger  {
 	[MonoPInvokeCallback (typeof (ReceiveDeviceMessageDelegate))]
 	protected static void ReceiveDeviceMessage(string encodedMessage) 
 	{
-		//UnityEngine.Debug.Log(encodedMessage);
 		// Decode the stirng into an object
 		SpheroDeviceMessage message = SpheroDeviceMessageDecoder.messageFromEncodedString(encodedMessage);
 		
 		// Pass it on to event handlers
 		if ( message is SpheroDeviceAsyncMessage) {
 			sharedInstance.OnAsyncMessageReceived(new MessengerEventArgs(message));
-		}
+		}	
 	}
-
+	
+#if UNITY_ANDROID
+	[DllImport ("unity_bridge")]
+#elif UNITY_IPHONE
 	[DllImport ("__Internal")]
+#endif
 	private static extern void _RegisterRecieveDeviceMessageCallback(ReceiveDeviceMessageDelegate callback);
 }

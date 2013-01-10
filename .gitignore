@@ -392,3 +392,5 @@
 Temp/
 Library/
 xcode_project/
+gen/
+bin/
