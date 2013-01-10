@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 
 extern "C" {
-
     typedef void (*ReceiveDeviceMessageCallback)(const char *);
 }
 

@@ -9,14 +9,59 @@ public class Sphero {
 	AndroidJavaObject m_JavaSphero;
 #endif
 	
-	int m_Color;
+	// Bluetooth Info Inner Data Structure Class
+	private class BluetoothInfo {
+		private string m_Name;
+	    public string Name
+	    {
+			get{ return this.m_Name; }
+			set{ this.m_Name = value; }
+	    }
+		private string m_Address;
+		public string Address
+	    {
+			get{ return this.m_Address; }
+			set{ this.m_Address = value; }
+	    }
+		
+		public BluetoothInfo(string name, string address) {
+			m_Name = name;
+			m_Address = address;
+		}
+	}
+	private BluetoothInfo m_BluetoothInfo; 
+	
+	// Current Sphero Color
+	private int m_Color;
+	public int Color 
+	{
+		get{ return this.m_Color; }
+		set{ this.m_Color = value; }
+	}
+	
+	// Connection State
+	public enum Connection_State { Failed, Disconnected, Connecting, Connected };
+	private Connection_State m_ConnectionState = Connection_State.Disconnected;
+	public Connection_State ConnectionState
+	{
+		get{ return this.m_ConnectionState; }
+		set{ this.m_ConnectionState = value; }
+	}
 	
 #if UNITY_ANDROID	
 	/*
 	 * Default constructor used for Android 
 	 */ 
 	public Sphero(AndroidJavaObject sphero) {		
-			m_JavaSphero = sphero;
+		m_JavaSphero = sphero;
+	}
+	
+	/*
+	 * More detailed constructor used for Android 
+	 */ 
+	public Sphero(AndroidJavaObject sphero, string bt_name, string bt_address) {		
+		m_JavaSphero = sphero;
+		m_BluetoothInfo = new BluetoothInfo(bt_name, bt_address);
 	}
 #endif
 	
@@ -31,7 +76,7 @@ public class Sphero {
 	 * @param green the amount of green from (0.0 - 1.0) intensity
 	 * @param blue the amount of blue from (0.0 - 1.0) intensity
 	 */
-	public void setRGB(float red, float green, float blue) {
+	public void SetRGBLED(float red, float green, float blue) {
 		#if UNITY_ANDROID	
 			using( AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RGBLEDOutputCommand") ) {
 				jc.CallStatic("sendCommand",m_JavaSphero,red*255,green*255,blue*255);
@@ -57,7 +102,7 @@ public class Sphero {
 	 * Change Sphero's color to desired output
 	 * @param color is a hexadecimal representation of color
 	 */
-	public void setRGB(int color) {
+	public void SetRGBLED(int color) {
 		
 		int red = (color & 0x00FF0000) >> 16;
 		int green = (color & 0x0000FF00) >> 8;
@@ -75,30 +120,30 @@ public class Sphero {
 	}
 	
 	/*
-	 * Get the current color of the ball as an int with an alpha channel of 255
-	 */ 
-	public int getColor() {
-		return m_Color;
-	}
-	
-	/*
 	 * Get the current red color of the ball 
 	 */ 
-	public float getRedIntensity() {
+	public float GetRedIntensity() {
 		return (m_Color & 0x00FF0000) >> 16;
 	}
 	
 	/*
 	 * Get the current green color of the ball 
 	 */ 
-	public float getGreenIntensity() {
+	public float GetGreenIntensity() {
 		return (m_Color & 0x0000FF00) >> 8;
 	}
 	
 	/*
 	 * Get the current blue color of the ball 
 	 */ 
-	public float getBlueIntensity() {
+	public float GetBlueIntensity() {
 		return m_Color & 0x000000FF;
+	}
+	
+	/*
+	 * Get the Name of the Sphero. (i.e. Sphero-PRR)
+	 */
+	public string GetName() {
+		return m_BluetoothInfo.Name;
 	}
 }
