@@ -26,5 +26,4 @@ public class SpheroDeviceSensorsAsyncData : SpheroDeviceAsyncMessage
 			frames[i++] = (SpheroDeviceSensorsData)decodedObject;
 		}
 	}
-	
 }
