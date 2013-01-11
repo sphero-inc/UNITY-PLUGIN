@@ -42,7 +42,7 @@ public class SpheroConnectionView : MonoBehaviour {
 	int m_SpheroLabelSelected = -1;
 	
 	// Sphero Provider
-	SpheroProvider m_SpheroProvider = SpheroProvider.GetSharedProvider();
+	SpheroProvider m_SpheroProvider;
 	// Paired Sphero Info
 	int m_PairedRobotCount;
 	string[] m_RobotNames;
@@ -109,20 +109,19 @@ public class SpheroConnectionView : MonoBehaviour {
 	 * Called if the OS is Android to show the Connection Scene
 	 */
 	void setupAndroid() {
+		
+		// initialize the Sphero Provider (Cannot call in the initialization of member variables or you will get a crash!)
+		m_SpheroProvider = SpheroProvider.GetSharedProvider();
 
 		// Make the spinner smaller to appear next to the clickable list
 		if( m_MultipleSpheros ) {
 			m_SpinnerSize = new Vector2(m_SpheroLabelHeight-10, m_SpheroLabelHeight-10);	
 		}
-
-		// The SDK uses alot of handlers that need a valid Looper in the thread, so set that up here
-        using (AndroidJavaClass jc = new AndroidJavaClass("android.os.Looper"))
-        {
-        	jc.CallStatic("prepare");
-        }
 		
 		// Search for paired robots
-		m_SpheroProvider.FindRobots();
+		if( !m_SpheroProvider.FindRobots() ) {
+			m_Title = "Bluetooth Not Enabled";
+		}
 		m_RobotNames = m_SpheroProvider.GetRobotNames();
 		
 		// Sign up for connection notifications
@@ -260,13 +259,14 @@ public class SpheroConnectionView : MonoBehaviour {
 		// Don't connect to more than one at a time
 		if( m_RobotConnectingIndex > -1 ) return;
 		
-		m_SpheroProvider.SetRobotConnectionState(row, Sphero.Connection_State.Connecting);
 		m_SpheroProvider.Connect(row);
 		// Adjust title info
 		m_SpheroLabelSelected = row;
 		m_RobotConnectingIndex = m_SpheroLabelSelected;
 		m_Title = "Connecting to " + m_RobotNames[m_SpheroLabelSelected];		
 	}
+
+#if UNITY_ANDROID				
 	
 	// Called when the GUI should update
 	void OnGUI() {
@@ -294,9 +294,7 @@ public class SpheroConnectionView : MonoBehaviour {
 		
 			// Check if we are done adding robots
 			if( buttonLabel.Equals("Done") ){
-#if UNITY_ANDROID				
 				RemoveListenerAndLoadLevel();
-#endif				
 			}
 			// Check if we have a Sphero connected
 			else if( m_SpheroLabelSelected >= 0 ) {
@@ -386,4 +384,5 @@ public class SpheroConnectionView : MonoBehaviour {
 		irow = Mathf.Min(irow, m_RobotNames.Length);  // they might have touched beyond last row
 		return irow;
     }
+#endif				
 }

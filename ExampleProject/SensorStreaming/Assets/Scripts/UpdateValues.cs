@@ -1,12 +1,16 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 
 public class UpdateValues: MonoBehaviour {
+	private Sphero m_Sphero;
+	
 	private bool streaming = false;
 	private SpheroAccelerometerData.Acceleration acceleration = 
 		new SpheroAccelerometerData.Acceleration();
+
 	private float pitch = 0.0f;
 	private float roll = 0.0f;
 	private float yaw = 0.0f;
@@ -23,11 +27,11 @@ public class UpdateValues: MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (SpheroBridge.IsRobotConnected() && !streaming) {
-			SpheroBridge.EnableControllerStreaming(20, 1, 
-				(SpheroDataStreamingMask.IMUAnglesFilteredAll | 
-				SpheroDataStreamingMask.AccelerometerFilteredAll | 
-				SpheroDataStreamingMask.QuaternionAll)); 
+		if (!streaming) {
+			List<Sphero> spheroList = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
+		m_Sphero = spheroList[0];
+		m_Sphero.EnableControllerStreaming(20, 1, SpheroDataStreamingMask.AccelerometerFilteredAll);
+
 			streaming = true;
 		}	
 	}
@@ -35,7 +39,7 @@ public class UpdateValues: MonoBehaviour {
 	void OnApplicationPause() {
 		Debug.Log("APPLICATION PAUSE");
 		if (streaming) {
-			SpheroBridge.DisableControllerStreaming();
+			m_Sphero.DisableControllerStreaming();
 			streaming = false;
 		}
 	}
@@ -74,7 +78,8 @@ public class UpdateValues: MonoBehaviour {
 		SpheroDeviceSensorsData sensorsData = message.Frames[0];
 		
 		acceleration = sensorsData.AccelerometerData.Normalized;
-		
+
+/*		
 		pitch = sensorsData.AttitudeData.Pitch;
 		roll = sensorsData.AttitudeData.Roll;
 		yaw = sensorsData.AttitudeData.Yaw;
@@ -83,7 +88,7 @@ public class UpdateValues: MonoBehaviour {
 		q1 = sensorsData.QuaternionData.Q1;
 		q2 = sensorsData.QuaternionData.Q2;
 		q3 = sensorsData.QuaternionData.Q3; 
-		
+*/		
 	}
 
 }

@@ -9,7 +9,7 @@ public class SpheroProvider {
 	static SpheroProvider sharedProvider = null;
 	
 #if UNITY_ANDROID
-	AndroidJavaObject m_RobotProvider;
+	private AndroidJavaObject m_RobotProvider;
 #endif
 	
 	// Robots
@@ -18,7 +18,23 @@ public class SpheroProvider {
 	// The Sphero that is currently attempting to connect
 	Sphero m_ConnectingSphero;
 	
-	public SpheroProvider() {}
+	/*
+	 * Get the Robot Provider for Android 
+	 */
+	public SpheroProvider() {
+#if UNITY_ANDROID
+		// The SDK uses alot of handlers that need a valid Looper in the thread, so set that up here
+        using (AndroidJavaClass jc = new AndroidJavaClass("android.os.Looper"))
+        {
+        	jc.CallStatic("prepare");
+        }
+		
+		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RobotProvider"))
+	    {
+			m_RobotProvider = jc.CallStatic<AndroidJavaObject>("getDefaultProvider");
+		}
+#endif
+	}
 	
 	/* Get the shared RobotProvider instance */
 	public static SpheroProvider GetSharedProvider() {
@@ -41,8 +57,8 @@ public class SpheroProvider {
 			}
 		#elif UNITY_IOS
 			connectedSpheros.Add(m_PairedSpheros[0]);
-			return connectedSpheros;
 		#endif		
+		return connectedSpheros;
 	}
 	
 	/*
@@ -64,10 +80,7 @@ public class SpheroProvider {
 	public void DisconnectSpheros() {
 		#if UNITY_ANDROID
 			// Disconnect robots
-			using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RobotProvider"))
-			{
-		        jc.CallStatic<AndroidJavaObject>("getDefaultProvider").Call("disconnectControlledRobots");	
-			}	
+		    m_RobotProvider.Call("disconnectControlledRobots");	
 		#elif UNITY_IPHONE
 		 	
 		#endif
@@ -75,13 +88,8 @@ public class SpheroProvider {
 	
 	
 	/* Need to call this to get the robot objects that are paired from Android */
-	public void FindRobots() {
-#if UNITY_ANDROID
-		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RobotProvider"))
-        {
-			// Grab a handle on the RobotProvider
-            m_RobotProvider = jc.CallStatic<AndroidJavaObject>("getDefaultProvider");
-
+	public bool FindRobots() {
+		#if UNITY_ANDROID
 			// Only run this stuff if the adapter is enabled
 			if( IsAdapterEnabled() ) {
 				m_RobotProvider.Call("findRobots");  
@@ -97,23 +105,19 @@ public class SpheroProvider {
 					string bt_address = robot.Call<string>("getUniqueId");
 					m_PairedSpheros[i] = new Sphero(robot, bt_name, bt_address);
 				}
+				return true;
 			}
-        }	
-#endif		
+		#endif		
+		return false;
 	}
 	
 	/* Check if bluetooth is on */
 	public bool IsAdapterEnabled() {
-#if UNITY_ANDROID
-		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RobotProvider"))
-        {
-			// Grab a handle on the RobotProvider
-            m_RobotProvider = jc.CallStatic<AndroidJavaObject>("getDefaultProvider"); 
-		}
-		return m_RobotProvider.Call<bool>("isAdapterEnabled"); 
-#else
-		return false;
-#endif		
+		#if UNITY_ANDROID
+			return m_RobotProvider.Call<bool>("isAdapterEnabled"); 
+		#else
+			return false;
+		#endif		
 	}
 	
 	/*
@@ -127,37 +131,37 @@ public class SpheroProvider {
 	public string[] GetRobotNames() {
 		// Store the robots that are paired into an array
 		string[] robotNames = new string[m_PairedSpheros.Length];
-#if UNITY_ANDROID		
-		for( int i = 0; i < m_PairedSpheros.Length; i++ ) {
-			robotNames[i] = m_PairedSpheros[i].GetName();
-		}
-#endif		
+		#if UNITY_ANDROID		
+			for( int i = 0; i < m_PairedSpheros.Length; i++ ) {
+				robotNames[i] = m_PairedSpheros[i].GetName();
+			}
+		#endif		
 		return robotNames;
 	}
 	
 	/* Grab the connecting Robot */
 	public Sphero GetConnectingSphero() {
-#if UNITY_ANDROID
-		return m_ConnectingSphero;	
-#else
+		#if UNITY_ANDROID
+			foreach( Sphero sphero in m_PairedSpheros ) {
+				if( sphero.ConnectionState == Sphero.Connection_State.Connecting ) {
+					return sphero;
+				}	
+			}
+		#else
+			return null;
+		#endif
 		return null;
-#endif
 	}
 	
 	/* Connect to a robot at index */
 	public void Connect(int index) {
-#if UNITY_ANDROID
-		// Grab a handle on the RobotProvider
-		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.robot.base.RobotProvider"))
-		{
-			// Connect the selected robot
-    		m_RobotProvider = jc.CallStatic<AndroidJavaObject>("getDefaultProvider");
-			m_RobotProvider.Call("control", index);
+		// Don't try to connect to multiple Spheros at once
+		if( GetConnectingSphero() != null ) return;
+		#if UNITY_ANDROID
+			m_RobotProvider.Call("control", m_PairedSpheros[index].AndroidJavaSphero);
 			m_RobotProvider.Call<AndroidJavaObject>("connectControlledRobots");
-			// Save the robot for future calls
-			m_ConnectingSphero = m_PairedSpheros[index];
-		}	
-#endif
+			m_PairedSpheros[index].ConnectionState = Sphero.Connection_State.Connecting;
+		#endif
 	}	
 	
 	/*

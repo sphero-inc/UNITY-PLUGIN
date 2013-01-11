@@ -104,8 +104,6 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     if ([data isKindOfClass:[RKDeviceSensorsAsyncData class]]) {
         RKDeviceSensorsAsyncData *sensors_data = (RKDeviceSensorsAsyncData *)data;
         RKDeviceSensorsData *data = [sensors_data.dataFrames objectAtIndex:0];
-        NSLog(@"{q0:%f, q1:%f, q2:%f, q3:%f}", data.quaternionData.quaternions.q0, data.quaternionData.quaternions.q1,
-              data.quaternionData.quaternions.q2, data.quaternionData.quaternions.q3);
         
         // Send serialized object to Unity
         if (receiveDeviceMessageCallback != NULL) {
