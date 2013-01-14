@@ -23,16 +23,7 @@ public class HelloWorld : MonoBehaviour {
 //		SpheroDeviceMessenger.SharedInstance.AsyncDataReceived += ReceiveAsyncMessage;	
 //		foreach( Sphero sphero in m_SpheroList ) {
 //			sphero.EnableControllerStreaming(50,1,SpheroDataStreamingMask.IMUPitchAngleFiltered);		
-//		}
-		
-#if UNITY_ANDROID
-		// Sign up for connection notifications
-		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
-        {
-			AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
-			jo.Call("addListener", "HelloWorld", "javaMessage");
-		}	
-#endif		
+//		}	
 	}
 	
 	// Update is called once per frame
@@ -62,20 +53,24 @@ public class HelloWorld : MonoBehaviour {
 	}
 	
 	void OnApplicationPause() {
-#if UNITY_ANDROID		
-		// Remove connection listener
-		using (AndroidJavaClass jc = new AndroidJavaClass("orbotix.unity.UnityConnectionMessageDispatcher"))
-        {
-			AndroidJavaObject jo = jc.CallStatic<AndroidJavaObject>("getDefaultDispatcher");
-			jo.Call("removeListener", "HelloWorld");
-		}	
-#endif		
 		// Disconnect robots
 		SpheroProvider.GetSharedProvider().DisconnectSpheros();
 	}
 	
 	public void javaMessage(string message) {
 		if( message.Equals("disconnect") ) {
+			m_SpheroList[0].ConnectionState = Sphero.Connection_State.Disconnected;
+			Application.LoadLevel("NoSpheroConnectedScene");
+		}
+	}
+	
+		/*
+	 * Callback to receive connection notifications 
+	 */
+	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
+	{
+		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
+		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
 			m_SpheroList[0].ConnectionState = Sphero.Connection_State.Disconnected;
 			Application.LoadLevel("NoSpheroConnectedScene");
 		}

@@ -34,13 +34,13 @@ jclass GetUnityBridgeClass() {
     JNIEnv* env = GetEnv();
     return env->FindClass("orbotix/unity/UnityBridge");
 }
-
+  
 /*
  * Class:     orbotix_unity_UnityBridge
- * Method:    handleDataStreaming
+ * Method:    sendMessage
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_orbotix_unity_UnityBridge_handleDataStreaming
+JNIEXPORT void JNICALL Java_orbotix_unity_UnityBridge_sendMessage
   (JNIEnv *env, jobject object, jstring msg)
   {
         // Send serialized object to Unity
@@ -51,7 +51,7 @@ JNIEXPORT void JNICALL Java_orbotix_unity_UnityBridge_handleDataStreaming
 
 /*
  * Class:     orbotix_unity_UnityBridge
- * Method:    handleDataStreaming
+ * Method:    _RegisterRecieveDeviceMessageCallback
  * Signature: ()V
  */
   void _RegisterRecieveDeviceMessageCallback(ReceiveDeviceMessageCallback callback) {

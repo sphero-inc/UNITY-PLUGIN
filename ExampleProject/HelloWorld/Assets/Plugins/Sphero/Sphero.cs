@@ -18,26 +18,29 @@ public class Sphero {
 #endif
 	
 	// Bluetooth Info Inner Data Structure Class
-	private class BluetoothInfo {
+	public class BluetoothDeviceInfo {
 		private string m_Name;
 	    public string Name
 	    {
 			get{ return this.m_Name; }
 			set{ this.m_Name = value; }
 	    }
-		private string m_Address;
-		public string Address
-	    {
-			get{ return this.m_Address; }
-			set{ this.m_Address = value; }
-	    }
+		private string m_UniqueId;
+		public string UniqueId {
+			get{ return this.m_UniqueId; }
+			set{ this.m_UniqueId = value; }	
+		}
 		
-		public BluetoothInfo(string name, string address) {
+		public BluetoothDeviceInfo(string name, string uniqueId) {
 			m_Name = name;
-			m_Address = address;
+			m_UniqueId = uniqueId;
 		}
 	}
-	private BluetoothInfo m_BluetoothInfo; 
+	
+	private BluetoothDeviceInfo m_DeviceInfo; 
+	public BluetoothDeviceInfo DeviceInfo {
+		get{ return this.m_DeviceInfo; }
+	}
 	
 	// Current Sphero Color
 	private int m_Color;
@@ -69,7 +72,7 @@ public class Sphero {
 	 */ 
 	public Sphero(AndroidJavaObject sphero, string bt_name, string bt_address) {		
 		m_AndroidJavaSphero = sphero;
-		m_BluetoothInfo = new BluetoothInfo(bt_name, bt_address);
+		m_DeviceInfo = new BluetoothDeviceInfo(bt_name, bt_address);
 	}
 #endif
 	
@@ -150,7 +153,7 @@ public class Sphero {
 	 * Get the Name of the Sphero. (i.e. Sphero-PRR)
 	 */
 	public string GetName() {
-		return m_BluetoothInfo.Name;
+		return m_DeviceInfo.Name;
 	}
 	
 	/**

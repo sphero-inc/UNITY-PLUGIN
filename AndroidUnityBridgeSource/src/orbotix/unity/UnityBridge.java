@@ -2,13 +2,18 @@ package orbotix.unity;
 
 import java.util.HashMap;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import orbotix.robot.base.BackLEDOutputCommand;
 import orbotix.robot.base.DeviceAsyncData;
+import orbotix.robot.base.DeviceMessageEncoder;
 import orbotix.robot.base.DeviceMessenger;
+import orbotix.robot.base.DeviceNotification;
 import orbotix.robot.base.DeviceSensorsAsyncData;
 import orbotix.robot.base.Robot;
+import orbotix.robot.base.RobotProvider;
 import orbotix.robot.base.SetDataStreamingCommand;
 import orbotix.robot.base.StabilizationCommand;
 
@@ -35,7 +40,9 @@ public class UnityBridge {
 	/**
 	 * Default Constructor
 	 */
-	public UnityBridge() {}
+	public UnityBridge() {
+		registerForSpheroNotifications();
+	}
 	
 	/**
 	 * Accessor for the shared unity bridge
@@ -44,6 +51,69 @@ public class UnityBridge {
 	public static UnityBridge sharedBridge() {
 		return sharedBridge;
 	}
+	
+	private Handler mHandler = new Handler(Looper.getMainLooper());
+	
+	/**
+	 * Register for notifications that will then be sent to Unity
+	 */
+	private void registerForSpheroNotifications() {
+        // Set up callbacks to the listeners
+        RobotProvider.getDefaultProvider().setOnRobotConnectionFailedListener(mConnectionFailedListener);
+        RobotProvider.getDefaultProvider().setOnRobotConnectedListener(mConnectedListener);
+        RobotProvider.getDefaultProvider().setOnRobotDisconnectedListener(mDisconnectedListener);
+	}
+	
+	/**
+	 * Connection Failed Listener to Send Notification Messages to Unity
+	 */
+	private RobotProvider.OnRobotConnectionFailedListener mConnectionFailedListener = new RobotProvider.OnRobotConnectionFailedListener() {
+		@Override
+		public void onRobotConnectionFailed(Robot arg0) {
+        	DeviceNotification notification = new DeviceNotification(arg0, DeviceNotification.DEVICE_NOTIFICATION_TYPE_CONNECTION_FAILED);
+        	final DeviceMessageEncoder encoder = DeviceMessageEncoder.encodeMessage(notification);
+        	mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+        			UnityBridge.sharedBridge().sendMessage(encoder.toString());
+				}
+			});
+		}
+	};
+	
+	/**
+	 * Connection Success Listener to Send Notification Messages to Unity
+	 */
+    private RobotProvider.OnRobotConnectedListener mConnectedListener = new RobotProvider.OnRobotConnectedListener() {
+        @Override
+        public void onRobotConnected(Robot robot) {
+        	DeviceNotification notification = new DeviceNotification(robot, DeviceNotification.DEVICE_NOTIFICATION_TYPE_CONNECTED);
+        	final DeviceMessageEncoder encoder = DeviceMessageEncoder.encodeMessage(notification);
+        	mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+        			UnityBridge.sharedBridge().sendMessage(encoder.toString());
+				}
+			});
+        }
+    };
+
+    /**
+	 * Connection Disconnected Listener to Send Notification Messages to Unity
+	 */
+    private RobotProvider.OnRobotDisconnectedListener mDisconnectedListener = new RobotProvider.OnRobotDisconnectedListener() {
+		@Override
+		public void onRobotDisconnected(Robot arg0) {
+        	DeviceNotification notification = new DeviceNotification(arg0, DeviceNotification.DEVICE_NOTIFICATION_TYPE_CONNECTION_FAILED);
+        	final DeviceMessageEncoder encoder = DeviceMessageEncoder.encodeMessage(notification);
+        	mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+        			UnityBridge.sharedBridge().sendMessage(encoder.toString());
+				}
+			});
+		}
+	};
 	
 	/**
 	 * Start Streaming Data to Unity 
@@ -127,7 +197,7 @@ public class UnityBridge {
 	                
 	                int ctr = dataStreamingProfile.getPacketCounter();
 	                String mockMsg = "{\"class\":\"DeviceSensorsAsyncData\",\"timeStamp\":123456,\"frameCount\":2,\"mas\":17293822572867608672,\"dataFrames\":[{\"class\":\"DeviceSensorsData\",\"accelerometerData\":{\"class\":\"AccelerometerData\",\"normalized.x\":1.23,\"normalized.y\":1.23,\"normalized.z\":1.23,\"accelerationRaw.x\":4096,\"accelerationRaw.y\":4096,\"accelerationRaw.z\":4096},\"attitudeData\":{\"class\":\"AttitudeData\",\"pitch\":45,\"roll\":180,\"yaw\":270},\"quaternionData\":{\"class\":\"QuaternionData\",\"quaternions.q0\":"+ctr+",\"quaternions.q1\":0.7,\"quaternions.q2\":0.3,\"quaternions.q3\":1},\"backEMFData\":{\"class\":\"BackEMFData\",\"filtered.rightMotor\":200,\"filtered.leftMotor\":200,\"raw.rightMotor\":200,\"raw.leftMotor\":200},\"locatorData\":{\"class\":\"LocatorData\",\"position.x\":190.2,\"position.y\":85.6,\"velocity.x\":9.99,\"velocity.y\":86.4},\"gyroData\":{\"class\":\"GyroData\",\"rotationRate.x\":300,\"rotationRate.y\":300,\"rotationRate.z\":300,\"rotationRateRaw.x\":300,\"rotationRateRaw.y\":300,\"rotationRateRaw.z\":300}},{\"class\":\"DeviceSensorsData\",\"accelerometerData\":{\"class\":\"AccelerometerData\",\"normalized.x\":1.23,\"normalized.y\":1.23,\"normalized.z\":1.23},\"attitudeData\":{\"class\":\"AttitudeData\",\"pitch\":45,\"roll\":180,\"yaw\":270},\"quaternionData\":{\"class\":\"QuaternionData\",\"quaternions.q0\":0.3,\"quaternions.q1\":0.7,\"quaternions.q2\":0.3,\"quaternions.q3\":1},\"backEMFData\":{\"class\":\"BackEMFData\",\"filtered.rightMotor\":200,\"filtered.leftMotor\":200,\"raw.rightMotor\":200,\"raw.leftMotor\":200},\"locatorData\":{\"class\":\"LocatorData\",\"position.x\":190.2,\"position.y\":85.6,\"velocity.x\":9.99,\"velocity.y\":86.4},\"gyroData\":{\"class\":\"GyroData\",\"rotationRate.x\":300,\"rotationRate.y\":300,\"rotationRate.z\":300,\"rotationRateRaw.x\":300,\"rotationRateRaw.y\":300,\"rotationRateRaw.z\":300}}]}";
-	                UnityBridge.sharedBridge().handleDataStreaming(mockMsg);
+	                UnityBridge.sharedBridge().sendMessage(mockMsg);
             	}
             	
             	// Call Encoder!
@@ -214,5 +284,5 @@ public class UnityBridge {
     /// NDK Native Methods
     ///////////////////////////
     
-    private native void handleDataStreaming(String data);
+    private native void sendMessage(String msg);
 }
