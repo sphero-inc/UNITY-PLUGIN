@@ -23,8 +23,10 @@
 - (void)encodeDouble:(double)value forKey:(NSString *)key;
 - (void)encodeFloat:(float)value forKey:(NSString *)key;
 - (void)encodeInteger:(NSInteger)value forKey:(NSString *)key;
+- (void)encodeUnsignedInteger64:(uint64_t)value forKey:(NSString *)key;
 - (void)encodeInteger64:(int64_t)value forKey:(NSString *)key;
 - (void)encodeBOOL:(BOOL)value forKey:(NSString *)key;
+- (void)encodeString:(NSString*)value forKey:(NSString*)key;
 - (void)encodeObject:(id)value forKey:(NSString *)key;
 
 - (NSString *)stringRepresentation;

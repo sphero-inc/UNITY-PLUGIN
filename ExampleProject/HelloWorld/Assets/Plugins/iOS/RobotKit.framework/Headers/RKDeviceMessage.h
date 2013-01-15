@@ -20,9 +20,12 @@
  */
 @interface RKDeviceMessage : NSObject <RKDeviceMessageCoding> {
 	NSTimeInterval timeStamp;
+    NSString*      robotId;
 }
 
 /*! The time stamp for when an object is created. */
 @property (nonatomic, readonly) NSTimeInterval timeStamp;
+/*! The unique robot id for the robot that the message pertains to */
+@property (nonatomic, readonly) NSString* robotId;
 
 @end

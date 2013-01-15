@@ -25,6 +25,7 @@ public class SpheroProviderAndroid : SpheroProvider {
 	    {
 			m_RobotProvider = jc.CallStatic<AndroidJavaObject>("getDefaultProvider");
 		}
+		FindRobots();
 	}
 	
 	/*
@@ -35,14 +36,14 @@ public class SpheroProviderAndroid : SpheroProvider {
 	}
 	
 	/* Need to call this to get the robot objects that are paired from Android */
-	override public bool FindRobots() {
+	override public void FindRobots() {
 		// Only run this stuff if the adapter is enabled
 		if( IsAdapterEnabled() ) {
 			m_RobotProvider.Call("findRobots");  
 			AndroidJavaObject pairedRobots = m_RobotProvider.Call<AndroidJavaObject>("getRobots");
 			int pairedRobotCount = pairedRobots.Call<int>("size");
 			// Initialize Sphero array
-			base.m_PairedSpheros = new Sphero[pairedRobotCount];
+			m_PairedSpheros = new Sphero[pairedRobotCount];
 			// Create Sphero objects for the Paired Spheros
 			for( int i = 0; i < pairedRobotCount; i++ ) {
 				// Set up the Sphero objects
@@ -51,9 +52,7 @@ public class SpheroProviderAndroid : SpheroProvider {
 				string bt_address = robot.Call<string>("getUniqueId");
 				m_PairedSpheros[i] = new Sphero(robot, bt_name, bt_address);
 			}
-			return true;
 		}	
-		return false;
 	}
 	
 	/* Check if bluetooth is on */

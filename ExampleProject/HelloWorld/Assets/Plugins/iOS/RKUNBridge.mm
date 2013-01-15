@@ -54,7 +54,13 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     [[RKRobotProvider sharedRobotProvider] closeRobotConnection];
 }
 
-- (void)handleRobotOnline { 
+- (void)handleRobotOnline {
+    RKDeviceNotification* notification = [[RKDeviceNotification alloc]initWithNotificationType:RKDeviceNotificationTypeConnected];
+    // Send serialized object to Unity
+    if (receiveDeviceMessageCallback != NULL) {
+        RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:notification];
+        receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
+    }
     robotOnline = YES;
 }
 
@@ -79,7 +85,7 @@ extern void UnitySendMessage(const char *, const char *, const char *);
      if(controllerStreamingOn && !robotOnline) return;
      
      NSLog(@"Streaming Mask - %llx", mask);
-    
+
      [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOff];
      [RKBackLEDOutputCommand sendCommandWithBrightness:1.0];
      [self setDataStreamingWithSampleRateDivisor:divisor packetFrames:frames sensorMask:mask packetCount:0];
@@ -115,7 +121,27 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     }
 }
 
+- (char*)getRobotName {
+    return [[RKRobotProvider sharedRobotProvider].robot.name UTF8String];
+}
+
+- (char*)getRobotUniqueId {
+    return [[RKRobotProvider sharedRobotProvider].robot.bluetoothAddress UTF8String];
+}
+
+- (void)disconnectRobots {
+    [[RKRobotProvider sharedRobotProvider]closeRobotConnection];
+}
+
 extern "C" {
+    
+    char* RobotName() {
+        return [[RKUNBridge sharedBridge] getRobotName];
+    }
+    
+    char* RobotUniqueId() {
+        return [[RKUNBridge sharedBridge] getRobotUniqueId];
+    }
     
     void SetupRobotConnection() {
         [[RKUNBridge sharedBridge] connectToRobot];
@@ -163,6 +189,10 @@ extern "C" {
 	void _RegisterRecieveDeviceMessageCallback(ReceiveDeviceMessageCallback callback) {
         RKUNBridge *bridge = [RKUNBridge sharedBridge];
         bridge.receiveDeviceMessageCallback = callback;
+    }
+    
+    void DisconnectRobots() {
+        [[RKUNBridge sharedBridge] disconnectRobots];
     }
 }
 

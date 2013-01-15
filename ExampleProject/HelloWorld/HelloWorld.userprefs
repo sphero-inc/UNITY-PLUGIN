@@ -1,14 +1,12 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Plugins/Sphero/Sphero.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Plugins/Sphero/SpheroProviderIOS.cs">
     <Files>
-      <File FileName="Assets/Plugins/Sphero/SpheroDeviceNotification.cs" Line="13" Column="10" />
-      <File FileName="Assets/Plugins/Sphero/SpheroConnectionView.cs" Line="135" Column="1" />
-      <File FileName="Assets/Plugins/Sphero/SpheroDeviceMessenger.cs" Line="76" Column="75" />
-      <File FileName="Assets/Plugins/Sphero/Sphero.cs" Line="44" Column="19" />
-      <File FileName="Assets/Plugins/Sphero/SpheroProvider.cs" Line="182" Column="4" />
-      <File FileName="Assets/Plugins/Sphero/SpheroProviderAndroid.cs" Line="127" Column="27" />
-      <File FileName="Assets/Plugins/Sphero/SpheroProviderIOS.cs" Line="13" Column="7" />
+      <File FileName="Assets/Plugins/Sphero/SpheroConnectionView.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/Sphero/NoSpheroConnectedView.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/HelloWorld.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/Sphero/SpheroProvider.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/Sphero/SpheroProviderIOS.cs" Line="15" Column="53" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -104,7 +104,7 @@ public class UnityBridge {
     private RobotProvider.OnRobotDisconnectedListener mDisconnectedListener = new RobotProvider.OnRobotDisconnectedListener() {
 		@Override
 		public void onRobotDisconnected(Robot arg0) {
-        	DeviceNotification notification = new DeviceNotification(arg0, DeviceNotification.DEVICE_NOTIFICATION_TYPE_CONNECTION_FAILED);
+        	DeviceNotification notification = new DeviceNotification(arg0, DeviceNotification.DEVICE_NOTIFICATION_TYPE_DISCONNECTED);
         	final DeviceMessageEncoder encoder = DeviceMessageEncoder.encodeMessage(notification);
         	mHandler.post(new Runnable() {
 				@Override

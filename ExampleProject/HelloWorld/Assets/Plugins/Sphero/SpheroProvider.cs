@@ -12,6 +12,7 @@ public abstract class SpheroProvider {
 	protected Sphero[] m_PairedSpheros;
 	public Sphero[] PairedSpheros {
 		get{ return this.m_PairedSpheros; }	
+		set{ this.m_PairedSpheros = value; }
 	}
 	
 	/*
@@ -43,7 +44,6 @@ public abstract class SpheroProvider {
 		Sphero notifiedSphero = GetSphero(message.RobotID);
 		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTED ) {
 			notifiedSphero.ConnectionState = Sphero.Connection_State.Connected;
-			Debug.Log ("Connected Notification Processed");
 		}
 		else if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
 			notifiedSphero.ConnectionState = Sphero.Connection_State.Disconnected;
@@ -78,6 +78,7 @@ public abstract class SpheroProvider {
 	
 	/* Grab the robot names from Java array */
 	public string[] GetRobotNames() {
+		Debug.Log(m_PairedSpheros);
 		// Store the robots that are paired into an array
 		string[] robotNames = new string[m_PairedSpheros.Length];	
 		for( int i = 0; i < m_PairedSpheros.Length; i++ ) {
@@ -99,13 +100,12 @@ public abstract class SpheroProvider {
 		return connectedSpheros;
 	}
 	
-	
 	/*
 	 * Call to properly disconnect Spheros.  Call in OnApplicationPause 
 	 */
 	abstract public void DisconnectSpheros();
 	/* Need to call this to get the robot objects that are paired from Android */
-	abstract public bool FindRobots();
+	abstract public void FindRobots();
 	/* Check if bluetooth is on */
 	abstract public bool IsAdapterEnabled();
 	/* Connect to a robot at index */

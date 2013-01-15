@@ -108,7 +108,7 @@ public class SpheroConnectionView : MonoBehaviour {
 		}
 		
 		// Search for paired robots
-		if( !m_SpheroProvider.FindRobots() ) {
+		if( !m_SpheroProvider.IsAdapterEnabled() ) {
 			m_Title = "Bluetooth Not Enabled";
 		}
 		m_RobotNames = m_SpheroProvider.GetRobotNames();
@@ -148,11 +148,10 @@ public class SpheroConnectionView : MonoBehaviour {
 		m_SpheroProvider.DisconnectSpheros();
 	}
 	
+#if UNITY_ANDROID
 	// Update is called once per frame
  	void Update()
     {
-#if UNITY_ANDROID
-		
 		if (Input.touchCount != 1)
 		{
 			selected = -1;
@@ -206,17 +205,6 @@ public class SpheroConnectionView : MonoBehaviour {
 				timeTouchPhaseEnded = Time.time;
 			}
 		}
-#elif UNITY_IPHONE
-		if( SpheroBridge.IsRobotConnected() ) {
-			m_Title = "Connection Success";
-			
-			// Tell Sphero Provider we have a newly connected robot
-			m_SpheroProvider.AddConnectedSphero(new Sphero());
-				
-			// Go to HelloWorld Scene
-			Application.LoadLevel (m_NextLevel); 
-		}
-#endif
 	}
 	
 	/*
@@ -235,6 +223,7 @@ public class SpheroConnectionView : MonoBehaviour {
 	// Called when the GUI should update
 	void OnGUI() {
 		
+		if( m_RobotNames == null ) return;
 		GUI.skin = m_SpheroConnectionSkin;
 		
 		// Draw a title lable
@@ -335,7 +324,8 @@ public class SpheroConnectionView : MonoBehaviour {
 		
         GUI.EndScrollView();
 	}
-
+#endif
+	
     private int TouchToRowIndex(Vector2 touchPos)
     {
 		float y = Screen.height - touchPos.y;  // invert coordinates

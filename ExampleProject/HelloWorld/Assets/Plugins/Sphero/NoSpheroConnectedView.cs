@@ -33,9 +33,7 @@ public class NoSpheroConnectedView : MonoBehaviour {
 	int m_ButtonHeight = 55;
 	
 	// Use this for initialization
-	void Start () {		
-		
-		//lastLevel = Application.loadedLevel;
+	void Start () {	
 		
 		// Try to connect on iOS
 		#if UNITY_ANDROID
@@ -47,6 +45,7 @@ public class NoSpheroConnectedView : MonoBehaviour {
 	}
 	
 	void OnLevelWasLoaded () { 
+		SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
 		#if UNITY_ANDROID
 		#elif UNITY_IPHONE
 			SpheroBridge.SetupRobotConnection();	
@@ -56,21 +55,21 @@ public class NoSpheroConnectedView : MonoBehaviour {
 	}
 	
 	void OnApplicationPause() {
+		SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
 		SpheroProvider.GetSharedProvider().DisconnectSpheros();
 	}
 	
-	// Update is called once per frame
- 	void Update(){
-#if UNITY_IPHONE
-		if( SpheroBridge.IsRobotConnected() ) {
-			// Tell Sphero Provider we have a newly connected robot
-			SpheroProvider.GetSharedProvider().AddConnectedSphero(new Sphero());
-				
-			// Go to HelloWorld Scene
-			Application.LoadLevel (m_NextLevel); 
-		}
-#endif
+		/*
+	 * Callback to receive connection notifications 
+	 */
+	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
+	{
+		// Go to the desired scene
+		Application.LoadLevel (m_NextLevel); 
 	}
+	
+	// Update is called once per frame
+ 	void Update() {}
 	
 	// Called when the GUI should update
 	void OnGUI() {

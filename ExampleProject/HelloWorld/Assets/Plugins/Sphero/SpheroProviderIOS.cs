@@ -10,7 +10,11 @@ public class SpheroProviderIOS : SpheroProvider {
 	/*
 	 * Get the Robot Provider for Android 
 	 */
-	public SpheroProviderIOS() : base() {}
+	public SpheroProviderIOS() : base() {
+		m_PairedSpheros = new Sphero[1];
+		// DO NOT CHANGE THIS UNTIL MULTIPLE ROBOTS ARE CREATED
+		m_PairedSpheros[0].DeviceInfo.UniqueId = "iOSRobot";
+	}
 	
 	/*
 	 * Call to properly disconnect Spheros.  Call in OnApplicationPause 
