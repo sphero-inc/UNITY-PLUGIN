@@ -32,37 +32,8 @@ public class SpheroAndroid : Sphero {
 	 * @param blue the amount of blue from (0.0 - 1.0) intensity
 	 */
 	override public void SetRGBLED(float red, float green, float blue) {
-		
-		// Send command
-		m_RGBLEDOutput.CallStatic("sendCommand",m_AndroidJavaSphero,red*255,green*255,blue*255);
-		
-		// Set the alpha to 1
-		m_Color = 255;
-		m_Color = m_Color << 8;
-		// Set red bit and shift 8 left
-		m_Color += (int)(255 * red);
-		m_Color = m_Color << 8;
-		// Set green bit and shift 8 left
-		m_Color += (int)(255 * green);
-		m_Color = m_Color << 8;
-		// Set blue bit
-		m_Color += (int)(255 * blue);
-	}
-	
-	/*
-	 * Change Sphero's color to desired output
-	 * @param color is a hexadecimal representation of color
-	 */
-	override public void SetRGBLED(int color) {
-		
-		// Convert to RGB values
-		int red = (color & 0x00FF0000) >> 16;
-		int green = (color & 0x0000FF00) >> 8;
-		int blue = color & 0x000000FF;
-		
-		m_RGBLEDOutput.CallStatic("sendCommand",m_AndroidJavaSphero,red,green,blue);
-
-		m_Color = color;
+		m_RGBLEDOutput.CallStatic("sendCommand",m_AndroidJavaSphero,(int)(red*255),(int)(green*255),(int)(blue*255));
+		m_RGBLEDColor = new Color(red, green, blue, 1.0f);
 	}
 	
 	/**
@@ -78,7 +49,7 @@ public class SpheroAndroid : Sphero {
 	/**
 	 * Disable controller data streaming
 	 */
-	override public void DisableControllerStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask) {
+	override public void DisableControllerStreaming() {
 		m_UnityBridge.Call("disableControllerStreaming",m_AndroidJavaSphero);
 	}
 	
