@@ -18,14 +18,14 @@ ReceiveDeviceMessageCallback unityMessageCallback;
    * Signature: ()V
    */
 void _RegisterRecieveDeviceMessageCallback(ReceiveDeviceMessageCallback callback);
-
+  
 /*
  * Class:     orbotix_unity_UnityBridge
- * Method:    handleDataStreaming
+ * Method:    sendMessage
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_orbotix_unity_UnityBridge_handleDataStreaming
-  (JNIEnv *, jobject, jstring);
+JNIEXPORT void JNICALL Java_orbotix_unity_UnityBridge_sendMessage
+  (JNIEnv *env, jobject object, jstring msg);
 
 #ifdef __cplusplus
 }

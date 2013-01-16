@@ -62,7 +62,7 @@ public class SpheroDeviceMessageDecoder {
 		return value;
 	}
 		
-	public object DecodeString(string key)
+	public string DecodeString(string key)
 	{
 		return (string)DecodeObject(key);
 	}

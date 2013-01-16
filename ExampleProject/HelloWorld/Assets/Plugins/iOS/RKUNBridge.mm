@@ -45,17 +45,43 @@ extern void UnitySendMessage(const char *, const char *, const char *);
 -(void)connectToRobot {
     /*Try to connect to the robot*/
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOnline) name:RKDeviceConnectionOnlineNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleDidGainControl:) name:RKRobotDidGainControlNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOffline) name:RKDeviceConnectionOfflineNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOffline) name:RKRobotDidLossControlNotification object:nil];
+    robotInitialized = NO;
     if ([[RKRobotProvider sharedRobotProvider] isRobotUnderControl]) {
         [[RKRobotProvider sharedRobotProvider] openRobotConnection];        
     }
+    robotInitialized = YES;
 }
 
 -(void)appWillEnterBackground {
     [[RKRobotProvider sharedRobotProvider] closeRobotConnection];
 }
 
-- (void)handleRobotOnline { 
+- (void)handleRobotOnline {
+    RKDeviceNotification* notification = [[RKDeviceNotification alloc]initWithNotificationType:RKDeviceNotificationTypeConnected];
+    // Send serialized object to Unity
+    if (receiveDeviceMessageCallback != NULL) {
+        RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:notification];
+        receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
+    }
     robotOnline = YES;
+}
+
+- (void)handleRobotOffline {
+    RKDeviceNotification* notification = [[RKDeviceNotification alloc]initWithNotificationType:RKDeviceNotificationTypeDisconnected];
+    // Send serialized object to Unity
+    if (receiveDeviceMessageCallback != NULL) {
+        RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:notification];
+        receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
+    }
+    robotOnline = NO;
+}
+
+-(void)handleDidGainControl:(NSNotification*)notification {
+    if(!robotInitialized)return;
+    [[RKRobotProvider sharedRobotProvider] openRobotConnection];
 }
 
 - (void)setDataStreamingWithSampleRateDivisor:(uint16_t)divisor
@@ -79,7 +105,7 @@ extern void UnitySendMessage(const char *, const char *, const char *);
      if(controllerStreamingOn && !robotOnline) return;
      
      NSLog(@"Streaming Mask - %llx", mask);
-    
+
      [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOff];
      [RKBackLEDOutputCommand sendCommandWithBrightness:1.0];
      [self setDataStreamingWithSampleRateDivisor:divisor packetFrames:frames sensorMask:mask packetCount:0];
@@ -113,6 +139,10 @@ extern void UnitySendMessage(const char *, const char *, const char *);
             receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
         }
     }
+}
+
+- (void)disconnectRobots {
+    [[RKRobotProvider sharedRobotProvider]closeRobotConnection];
 }
 
 extern "C" {
@@ -163,6 +193,10 @@ extern "C" {
 	void _RegisterRecieveDeviceMessageCallback(ReceiveDeviceMessageCallback callback) {
         RKUNBridge *bridge = [RKUNBridge sharedBridge];
         bridge.receiveDeviceMessageCallback = callback;
+    }
+    
+    void DisconnectRobots() {
+        [[RKUNBridge sharedBridge] disconnectRobots];
     }
 }
 

@@ -2,9 +2,20 @@ package orbotix.unity;
 
 import java.util.HashMap;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
-import orbotix.robot.base.*;
+import orbotix.robot.base.BackLEDOutputCommand;
+import orbotix.robot.base.DeviceAsyncData;
+import orbotix.robot.base.DeviceMessageEncoder;
+import orbotix.robot.base.DeviceMessenger;
+import orbotix.robot.base.DeviceNotification;
+import orbotix.robot.base.DeviceSensorsAsyncData;
+import orbotix.robot.base.Robot;
+import orbotix.robot.base.RobotProvider;
+import orbotix.robot.base.SetDataStreamingCommand;
+import orbotix.robot.base.StabilizationCommand;
 
 /**
  * This is the Native Android code that manages sending data streaming to Unity using a function pointer in C++ libunity_bridge.so
@@ -29,7 +40,9 @@ public class UnityBridge {
 	/**
 	 * Default Constructor
 	 */
-	public UnityBridge() {}
+	public UnityBridge() {
+		registerForSpheroNotifications();
+	}
 	
 	/**
 	 * Accessor for the shared unity bridge
@@ -38,6 +51,69 @@ public class UnityBridge {
 	public static UnityBridge sharedBridge() {
 		return sharedBridge;
 	}
+	
+	private Handler mHandler = new Handler(Looper.getMainLooper());
+	
+	/**
+	 * Register for notifications that will then be sent to Unity
+	 */
+	private void registerForSpheroNotifications() {
+        // Set up callbacks to the listeners
+        RobotProvider.getDefaultProvider().setOnRobotConnectionFailedListener(mConnectionFailedListener);
+        RobotProvider.getDefaultProvider().setOnRobotConnectedListener(mConnectedListener);
+        RobotProvider.getDefaultProvider().setOnRobotDisconnectedListener(mDisconnectedListener);
+	}
+	
+	/**
+	 * Connection Failed Listener to Send Notification Messages to Unity
+	 */
+	private RobotProvider.OnRobotConnectionFailedListener mConnectionFailedListener = new RobotProvider.OnRobotConnectionFailedListener() {
+		@Override
+		public void onRobotConnectionFailed(Robot arg0) {
+        	DeviceNotification notification = new DeviceNotification(arg0, DeviceNotification.DEVICE_NOTIFICATION_TYPE_CONNECTION_FAILED);
+        	final DeviceMessageEncoder encoder = DeviceMessageEncoder.encodeMessage(notification);
+        	mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+        			UnityBridge.sharedBridge().sendMessage(encoder.toString());
+				}
+			});
+		}
+	};
+	
+	/**
+	 * Connection Success Listener to Send Notification Messages to Unity
+	 */
+    private RobotProvider.OnRobotConnectedListener mConnectedListener = new RobotProvider.OnRobotConnectedListener() {
+        @Override
+        public void onRobotConnected(Robot robot) {
+        	DeviceNotification notification = new DeviceNotification(robot, DeviceNotification.DEVICE_NOTIFICATION_TYPE_CONNECTED);
+        	final DeviceMessageEncoder encoder = DeviceMessageEncoder.encodeMessage(notification);
+        	mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+        			UnityBridge.sharedBridge().sendMessage(encoder.toString());
+				}
+			});
+        }
+    };
+
+    /**
+	 * Connection Disconnected Listener to Send Notification Messages to Unity
+	 */
+    private RobotProvider.OnRobotDisconnectedListener mDisconnectedListener = new RobotProvider.OnRobotDisconnectedListener() {
+		@Override
+		public void onRobotDisconnected(Robot arg0) {
+        	DeviceNotification notification = new DeviceNotification(arg0, DeviceNotification.DEVICE_NOTIFICATION_TYPE_DISCONNECTED);
+        	final DeviceMessageEncoder encoder = DeviceMessageEncoder.encodeMessage(notification);
+        	mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+        			UnityBridge.sharedBridge().sendMessage(encoder.toString());
+				}
+			});
+		}
+	};
 	
 	/**
 	 * Start Streaming Data to Unity 
@@ -207,5 +283,5 @@ public class UnityBridge {
     /// NDK Native Methods
     ///////////////////////////
     
-    private native void handleDataStreaming(String data);
+    private native void sendMessage(String msg);
 }
