@@ -28,4 +28,7 @@
 /*! The unique robot id for the robot that the message pertains to */
 @property (nonatomic, readonly) NSString* robotId;
 
+/*! Construct the message with a specific robot id */
+- (id) initWithRobotId:(NSString*)anId;
+
 @end

@@ -81,18 +81,4 @@ public class SpheroBridge {
 	[DllImport ("__Internal")]
 #endif
 	public static extern void DisconnectRobots();	
-	
-#if UNITY_ANDROID
-	[DllImport ("RKUNBridge")]
-#else
-	[DllImport ("__Internal")]
-#endif
-	public static extern void GetRobotName();
-		
-#if UNITY_ANDROID
-	[DllImport ("RKUNBridge")]
-#else
-	[DllImport ("__Internal")]
-#endif
-	public static extern void GetRobotUniqueId();
 }

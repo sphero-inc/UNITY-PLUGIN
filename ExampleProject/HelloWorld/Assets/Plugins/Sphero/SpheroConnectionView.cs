@@ -69,7 +69,7 @@ public class SpheroConnectionView : MonoBehaviour {
 		#elif UNITY_IPHONE
 			setupIOS();
 		#else
-			// Pop-up message that Sphero doesn't work with this platform?
+
 		#endif
 	}
 	
@@ -85,42 +85,39 @@ public class SpheroConnectionView : MonoBehaviour {
 	 * Called if the OS is iOS to immediately try to connect to the robot
 	 */
 	void setupIOS() {
-//		SpheroBridge.SetupRobotConnection();
-//		m_RobotNames = new string[0];
+		// initialize the Sphero Provider (Cannot call in the initialization of member variables or you will get a crash!)
+		m_SpheroProvider = SpheroProvider.GetSharedProvider();
 		Application.LoadLevel("NoSpheroConnectedScene");
 	}
 
-// Needed for compiling on iOS
 	/*
 	 * Called if the OS is Android to show the Connection Scene
 	 */
 	void setupAndroid() {
 		
-		// Initialize the device messenger which sets up the callback
-		SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
-		
 		// initialize the Sphero Provider (Cannot call in the initialization of member variables or you will get a crash!)
 		m_SpheroProvider = SpheroProvider.GetSharedProvider();
-
-		// Make the spinner smaller to appear next to the clickable list
-		if( m_MultipleSpheros ) {
-			m_SpinnerSize = new Vector2(m_SpheroLabelHeight-10, m_SpheroLabelHeight-10);	
-		}
 		
 		// Search for paired robots
 		if( !m_SpheroProvider.IsAdapterEnabled() ) {
 			m_Title = "Bluetooth Not Enabled";
+			m_RobotNames = new string[0];
 		}
-		m_RobotNames = m_SpheroProvider.GetRobotNames();
-		
-		// For debugging UI
-//		m_RobotNames = new string[6];
-//		m_RobotNames[0] = "Hello-0";
-//		m_RobotNames[1] = "Hello-1";
-//		m_RobotNames[2] = "Hello-2";
-//		m_RobotNames[3] = "Hello-3";
-//		m_RobotNames[4] = "Hello-4";
-//		m_RobotNames[5] = "Hello-5";
+		else {
+			// Initialize the device messenger which sets up the callback
+			SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
+	
+			// Make the spinner smaller to appear next to the clickable list
+			if( m_MultipleSpheros ) {
+				m_SpinnerSize = new Vector2(m_SpheroLabelHeight-10, m_SpheroLabelHeight-10);	
+			}	
+			m_RobotNames = m_SpheroProvider.GetRobotNames();
+			// Sphero Provider will try and connect to the first robot, so show that progress
+			if( m_RobotNames.Length == 1 ) {
+				m_SpheroProvider.PairedSpheros[0].ConnectionState = Sphero.Connection_State.Connecting;
+				m_SpheroLabelSelected = 0;
+			}
+		}
 	}
 	
 	/*
@@ -128,7 +125,6 @@ public class SpheroConnectionView : MonoBehaviour {
 	 */
 	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
 	{
-		Debug.Log("Message Received");	
 		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
 		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTED ) {
 			// Connect to the robot and move to the next scene designated by the developer
@@ -148,10 +144,10 @@ public class SpheroConnectionView : MonoBehaviour {
 		m_SpheroProvider.DisconnectSpheros();
 	}
 	
-#if UNITY_ANDROID
 	// Update is called once per frame
  	void Update()
     {
+#if UNITY_ANDROID
 		if (Input.touchCount != 1)
 		{
 			selected = -1;
@@ -205,6 +201,7 @@ public class SpheroConnectionView : MonoBehaviour {
 				timeTouchPhaseEnded = Time.time;
 			}
 		}
+#endif		
 	}
 	
 	/*
@@ -212,7 +209,8 @@ public class SpheroConnectionView : MonoBehaviour {
 	 */
 	void ConnectSphero(int row) {
 		// Don't connect to more than one at a time
-		if( m_SpheroProvider.GetConnectingSphero() != null ) return;
+		if( m_SpheroProvider.GetConnectingSphero() != null ||
+			m_SpheroProvider.PairedSpheros[row].ConnectionState == Sphero.Connection_State.Connected ) return;
 		
 		m_SpheroProvider.Connect(row);
 		// Adjust title info
@@ -222,7 +220,7 @@ public class SpheroConnectionView : MonoBehaviour {
 	
 	// Called when the GUI should update
 	void OnGUI() {
-		
+#if UNITY_ANDROID
 		if( m_RobotNames == null ) return;
 		GUI.skin = m_SpheroConnectionSkin;
 		
@@ -243,6 +241,12 @@ public class SpheroConnectionView : MonoBehaviour {
 		}
 		int connectBtnX = (Screen.width/2)-(m_ButtonWidth/2);
 		int connectBtnY = Screen.height-m_ViewPadding-m_ButtonHeight;
+		
+		// Check if Spheros are connected (only on multiple Sphero mode)
+		if( m_MultipleSpheros && m_SpheroProvider.GetConnectedSpheros().Count == 0 ) {
+			GUI.enabled = false;
+		}
+		// Draw Button at the bottom
 		if( GUI.Button(new Rect(connectBtnX,connectBtnY,m_ButtonWidth,m_ButtonHeight), buttonLabel )) {
 			// Check if we are done adding robots
 			if( buttonLabel.Equals("Done") ){
@@ -253,16 +257,17 @@ public class SpheroConnectionView : MonoBehaviour {
 				ConnectSphero(m_SpheroLabelSelected);	
 			}
 		}			
+		GUI.enabled = true;
 		
 		// Only show the connection dialog if we are connecting to a robot
 		if( !m_MultipleSpheros && m_SpheroProvider.GetConnectingSphero() != null ) {
-			GUI.Box(m_SpinnerRect,"");
-			
 			m_SpinnerPosition.x = Screen.width/2;
 			m_SpinnerPosition.y = Screen.height/2;
 			// Rotate the object
 			m_SpinnerRect = new Rect(m_SpinnerPosition.x - m_SpinnerSize.x * 0.5f, m_SpinnerPosition.y - m_SpinnerSize.y * 0.5f, m_SpinnerSize.x, m_SpinnerSize.y);
         	m_SpinnerPivotPos = new Vector2(m_SpinnerRect.xMin + m_SpinnerRect.width * 0.5f, m_SpinnerRect.yMin + m_SpinnerRect.height * 0.5f);
+			
+			GUI.Box(m_SpinnerRect);
 			
 			// Draw the new image
 	        Matrix4x4 matrixBackup = GUI.matrix;
@@ -271,6 +276,7 @@ public class SpheroConnectionView : MonoBehaviour {
 	        GUI.matrix = matrixBackup;
 			m_SpinnerAngle+=3;
 		}
+#endif
 	}
 
 	void DoWindow (int windowID) 
@@ -324,7 +330,6 @@ public class SpheroConnectionView : MonoBehaviour {
 		
         GUI.EndScrollView();
 	}
-#endif
 	
     private int TouchToRowIndex(Vector2 touchPos)
     {

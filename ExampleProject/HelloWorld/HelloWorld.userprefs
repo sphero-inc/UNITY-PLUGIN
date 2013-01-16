@@ -2,11 +2,12 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Plugins/Sphero/SpheroProviderIOS.cs">
     <Files>
-      <File FileName="Assets/Plugins/Sphero/SpheroConnectionView.cs" Line="1" Column="1" />
-      <File FileName="Assets/Plugins/Sphero/NoSpheroConnectedView.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/HelloWorld.cs" Line="1" Column="1" />
-      <File FileName="Assets/Plugins/Sphero/SpheroProvider.cs" Line="1" Column="1" />
-      <File FileName="Assets/Plugins/Sphero/SpheroProviderIOS.cs" Line="15" Column="53" />
+      <File FileName="Assets/Plugins/Sphero/Sphero.cs" Line="74" Column="2" />
+      <File FileName="Assets/Plugins/Sphero/SpheroAndroid.cs" Line="10" Column="18" />
+      <File FileName="Assets/Plugins/Sphero/SpheroIOS.cs" Line="11" Column="5" />
+      <File FileName="Assets/Plugins/Sphero/SpheroProvider.cs" Line="77" Column="5" />
+      <File FileName="Assets/Plugins/Sphero/SpheroProviderAndroid.cs" Line="68" Column="44" />
+      <File FileName="Assets/Plugins/Sphero/SpheroProviderIOS.cs" Line="17" Column="37" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

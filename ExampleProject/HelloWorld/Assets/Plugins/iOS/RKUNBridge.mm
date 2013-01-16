@@ -45,9 +45,14 @@ extern void UnitySendMessage(const char *, const char *, const char *);
 -(void)connectToRobot {
     /*Try to connect to the robot*/
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOnline) name:RKDeviceConnectionOnlineNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleDidGainControl:) name:RKRobotDidGainControlNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOffline) name:RKDeviceConnectionOfflineNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOffline) name:RKRobotDidLossControlNotification object:nil];
+    robotInitialized = NO;
     if ([[RKRobotProvider sharedRobotProvider] isRobotUnderControl]) {
         [[RKRobotProvider sharedRobotProvider] openRobotConnection];        
     }
+    robotInitialized = YES;
 }
 
 -(void)appWillEnterBackground {
@@ -62,6 +67,21 @@ extern void UnitySendMessage(const char *, const char *, const char *);
         receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
     }
     robotOnline = YES;
+}
+
+- (void)handleRobotOffline {
+    RKDeviceNotification* notification = [[RKDeviceNotification alloc]initWithNotificationType:RKDeviceNotificationTypeDisconnected];
+    // Send serialized object to Unity
+    if (receiveDeviceMessageCallback != NULL) {
+        RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:notification];
+        receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
+    }
+    robotOnline = NO;
+}
+
+-(void)handleDidGainControl:(NSNotification*)notification {
+    if(!robotInitialized)return;
+    [[RKRobotProvider sharedRobotProvider] openRobotConnection];
 }
 
 - (void)setDataStreamingWithSampleRateDivisor:(uint16_t)divisor
@@ -121,27 +141,11 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     }
 }
 
-- (char*)getRobotName {
-    return [[RKRobotProvider sharedRobotProvider].robot.name UTF8String];
-}
-
-- (char*)getRobotUniqueId {
-    return [[RKRobotProvider sharedRobotProvider].robot.bluetoothAddress UTF8String];
-}
-
 - (void)disconnectRobots {
     [[RKRobotProvider sharedRobotProvider]closeRobotConnection];
 }
 
 extern "C" {
-    
-    char* RobotName() {
-        return [[RKUNBridge sharedBridge] getRobotName];
-    }
-    
-    char* RobotUniqueId() {
-        return [[RKUNBridge sharedBridge] getRobotUniqueId];
-    }
     
     void SetupRobotConnection() {
         [[RKUNBridge sharedBridge] connectToRobot];

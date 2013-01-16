@@ -24,7 +24,7 @@ public class HelloWorld : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		m_BlinkCounter++;
-		if( m_BlinkCounter % 20 == 0 ) {
+		if( m_BlinkCounter % 20 == 0 ) {			
 			foreach( Sphero sphero in m_SpheroList ) {
 				// Set the Sphero color to blue 
 				if( sphero.Color == BLACK ) {
@@ -49,6 +49,8 @@ public class HelloWorld : MonoBehaviour {
 	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
 	{
 		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
+		Debug.Log("messge.type="+message.NotificationType);
+		Debug.Log("constant="+SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED);
 		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
 			m_SpheroList[0].ConnectionState = Sphero.Connection_State.Disconnected;
 			Application.LoadLevel("NoSpheroConnectedScene");

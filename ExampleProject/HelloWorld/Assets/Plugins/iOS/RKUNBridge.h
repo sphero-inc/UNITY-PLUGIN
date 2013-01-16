@@ -14,6 +14,7 @@ extern "C" {
 
 
 @interface RKUNBridge : NSObject {
+    BOOL robotInitialized;
     BOOL robotOnline;
     BOOL controllerStreamingOn;
 }

@@ -25,7 +25,27 @@ public class SpheroProviderAndroid : SpheroProvider {
 	    {
 			m_RobotProvider = jc.CallStatic<AndroidJavaObject>("getDefaultProvider");
 		}
+		// Sign up for notifications on Sphero connections
+		SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
 		FindRobots();
+	}
+	
+	/*
+	 * Callback to receive connection notifications 
+	 */
+	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
+	{
+		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
+		Sphero notifiedSphero = GetSphero(message.RobotID);
+		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTED ) {
+			notifiedSphero.ConnectionState = Sphero.Connection_State.Connected;
+		}
+		else if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
+			notifiedSphero.ConnectionState = Sphero.Connection_State.Disconnected;
+		}
+		else if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTION_FAILED ) {
+			notifiedSphero.ConnectionState = Sphero.Connection_State.Failed;
+		}
 	}
 	
 	/*
@@ -50,7 +70,7 @@ public class SpheroProviderAndroid : SpheroProvider {
 				AndroidJavaObject robot = pairedRobots.Call<AndroidJavaObject>("get",i);
 				string bt_name = robot.Call<string>("getName");
 				string bt_address = robot.Call<string>("getUniqueId");
-				m_PairedSpheros[i] = new Sphero(robot, bt_name, bt_address);
+				m_PairedSpheros[i] = new SpheroAndroid(robot, bt_name, bt_address);
 			}
 		}	
 	}
@@ -65,7 +85,7 @@ public class SpheroProviderAndroid : SpheroProvider {
 		// Don't try to connect to multiple Spheros at once
 		if( GetConnectingSphero() != null ) return;
 		
-		m_RobotProvider.Call("control", m_PairedSpheros[index].AndroidJavaSphero);
+		m_RobotProvider.Call("control", ((SpheroAndroid)m_PairedSpheros[index]).AndroidJavaSphero);
 		m_RobotProvider.Call<AndroidJavaObject>("connectControlledRobots");
 		m_PairedSpheros[index].ConnectionState = Sphero.Connection_State.Connecting;
 	}	

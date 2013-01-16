@@ -26,11 +26,6 @@ public class NoSpheroConnectedView : MonoBehaviour {
 	
 	// UI Padding Variables
 	int m_ViewPadding = 20;
-	int m_ElementPadding = 10;
-	
-	// Button Size Variables
-	int m_ButtonWidth = 200;
-	int m_ButtonHeight = 55;
 	
 	// Use this for initialization
 	void Start () {	

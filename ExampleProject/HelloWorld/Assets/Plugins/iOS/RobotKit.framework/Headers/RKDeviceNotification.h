@@ -13,10 +13,10 @@ typedef int RKDeviceNotificationType;
 enum {
     /*! The robot successfully connected */
     RKDeviceNotificationTypeConnected = 0,
-    /*! The robot connection attempt failed */
-    RKDeviceNotificationTypeConnectionFailed = 1,
     /*! The robot disconnected */
-    RKDeviceNotificationTypeDisconnected = 2
+    RKDeviceNotificationTypeDisconnected = 1,
+    /*! The robot connection attempt failed */
+    RKDeviceNotificationTypeConnectionFailed = 2
 };
 
 
@@ -26,13 +26,13 @@ enum {
  * @sa RKDeviceMessege
  */
 @interface RKDeviceNotification : RKDeviceMessage {
-    RKDeviceNotificationType notificationType;
+    RKDeviceNotificationType type;
 }
 
 /*! The type of notification from the robot */
-@property (nonatomic, readonly) RKDeviceNotificationType notificationType;
+@property (nonatomic, readonly) RKDeviceNotificationType type;
 
 /*! Constructor to set the notification type */
-- (id)initWithNotificationType:(RKDeviceNotificationType)type;
+- (id)initWithNotificationType:(RKDeviceNotificationType)notificationType;
 
 @end

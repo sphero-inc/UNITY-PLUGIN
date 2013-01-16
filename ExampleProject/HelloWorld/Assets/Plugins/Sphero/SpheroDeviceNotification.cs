@@ -16,6 +16,7 @@ public class SpheroDeviceNotification : SpheroDeviceMessage
 	public SpheroDeviceNotification(SpheroDeviceMessageDecoder decoder) 
 		: base(decoder)
 	{
+		// Do not change the "type" string since it is linked in RobotKit
 		m_NotificationType = (SpheroNotificationType)decoder.DecodeInt32("type");
 	}
 }

@@ -18,10 +18,7 @@ public abstract class SpheroProvider {
 	/*
 	 * Default Constructor
 	 */
-	public SpheroProvider() {
-		// Initialize the device messenger which sets up the callback
-		SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
-	}
+	public SpheroProvider() {}
 	
 	/* Get the shared RobotProvider instance */
 	public static SpheroProvider GetSharedProvider() {
@@ -33,24 +30,6 @@ public abstract class SpheroProvider {
 			#endif			
 		}
 		return sharedProvider;
-	}
-	
-	/*
-	 * Callback to receive connection notifications 
-	 */
-	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
-	{
-		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
-		Sphero notifiedSphero = GetSphero(message.RobotID);
-		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTED ) {
-			notifiedSphero.ConnectionState = Sphero.Connection_State.Connected;
-		}
-		else if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
-			notifiedSphero.ConnectionState = Sphero.Connection_State.Disconnected;
-		}
-		else if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTION_FAILED ) {
-			notifiedSphero.ConnectionState = Sphero.Connection_State.Failed;
-		}
 	}
 	
 	/*
@@ -82,7 +61,7 @@ public abstract class SpheroProvider {
 		// Store the robots that are paired into an array
 		string[] robotNames = new string[m_PairedSpheros.Length];	
 		for( int i = 0; i < m_PairedSpheros.Length; i++ ) {
-			robotNames[i] = m_PairedSpheros[i].GetName();
+			robotNames[i] = m_PairedSpheros[i].DeviceInfo.Name;
 		}		
 		return robotNames;
 	}
