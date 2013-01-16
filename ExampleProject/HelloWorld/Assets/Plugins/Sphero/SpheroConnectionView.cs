@@ -267,7 +267,7 @@ public class SpheroConnectionView : MonoBehaviour {
 			m_SpinnerRect = new Rect(m_SpinnerPosition.x - m_SpinnerSize.x * 0.5f, m_SpinnerPosition.y - m_SpinnerSize.y * 0.5f, m_SpinnerSize.x, m_SpinnerSize.y);
         	m_SpinnerPivotPos = new Vector2(m_SpinnerRect.xMin + m_SpinnerRect.width * 0.5f, m_SpinnerRect.yMin + m_SpinnerRect.height * 0.5f);
 			
-			GUI.Box(m_SpinnerRect);
+			GUI.Box(m_SpinnerRect,"");
 			
 			// Draw the new image
 	        Matrix4x4 matrixBackup = GUI.matrix;

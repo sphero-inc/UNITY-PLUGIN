@@ -52,6 +52,15 @@ public class SpheroProviderIOS : SpheroProvider {
 		SpheroBridge.SetupRobotConnection();
 	}	
 	
+	/*
+	 * Get a Sphero object from the unique Sphero id 
+	 * Returns nulls if no Spheros were found with that particular id
+	 */
+	override public Sphero GetSphero(string spheroId) {
+		if( m_PairedSpheros.Length > 0 ) return m_PairedSpheros[0];
+		return null; 
+	}
+	
 	/* Need to call this to get the robot objects that are paired from Android */
 	override public void FindRobots() {}
 	/* Check if bluetooth is on */

@@ -31,19 +31,6 @@ public abstract class SpheroProvider {
 		}
 		return sharedProvider;
 	}
-	
-	/*
-	 * Get a Sphero object from the unique Sphero id 
-	 * Returns nulls if no Spheros were found with that particular id
-	 */
-	public Sphero GetSphero(string spheroId) {
-		foreach( Sphero sphero in m_PairedSpheros ) {
-			if( sphero.DeviceInfo.UniqueId.Equals(spheroId)) {
-				return sphero;	
-			}
-		}
-		return null; 
-	}
 
 	/* Grab the connecting Robot */
 	public Sphero GetConnectingSphero() {
@@ -89,4 +76,9 @@ public abstract class SpheroProvider {
 	abstract public bool IsAdapterEnabled();
 	/* Connect to a robot at index */
 	abstract public void Connect(int index);	
+	/*
+	 * Get a Sphero object from the unique Sphero id 
+	 * Returns nulls if no Spheros were found with that particular id
+	 */
+	abstract public Sphero GetSphero(string spheroId);
 }

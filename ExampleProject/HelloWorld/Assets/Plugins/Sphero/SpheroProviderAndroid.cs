@@ -89,6 +89,19 @@ public class SpheroProviderAndroid : SpheroProvider {
 		m_RobotProvider.Call<AndroidJavaObject>("connectControlledRobots");
 		m_PairedSpheros[index].ConnectionState = Sphero.Connection_State.Connecting;
 	}	
+	
+	/*
+	 * Get a Sphero object from the unique Sphero id 
+	 * Returns nulls if no Spheros were found with that particular id
+	 */
+	override public Sphero GetSphero(string spheroId) {
+		foreach( Sphero sphero in m_PairedSpheros ) {
+			if( sphero.DeviceInfo.UniqueId.Equals(spheroId)) {
+				return sphero;	
+			}
+		}
+		return null; 
+	}
 }
 
 #endif
