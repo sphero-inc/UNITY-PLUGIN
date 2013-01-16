@@ -7,7 +7,7 @@ public class SpheroConnectionView : MonoBehaviour {
 	public string m_NextLevel;
 	
 	// Controls how many Spheros you can connect to (Android only)
-	public bool m_MultipleSpheros;
+	public bool m_MultipleSpheros = false;
 	
 	// Controls the look and feel of the Connection Scene
 	public GUISkin m_SpheroConnectionSkin;	
@@ -142,14 +142,15 @@ public class SpheroConnectionView : MonoBehaviour {
 	}
 	
 	public void javaMessage(string message) {
+		Debug.Log("message: " + message);
 		if( message.Equals("failed") ) {
 			m_SpheroProvider.SetRobotConnectionState(m_RobotConnectingIndex, Sphero.Connection_State.Failed);
 			m_Title = "Connection Failed";	
 		}
 		else if( message.Equals("success") ) {
 			
-			m_SpheroProvider.SetRobotConnectionState(m_RobotConnectingIndex, Sphero.Connection_State.Connected);
 			Sphero sphero = m_SpheroProvider.GetConnectingSphero();
+			m_SpheroProvider.SetRobotConnectionState(m_RobotConnectingIndex, Sphero.Connection_State.Connected);
 			m_SpheroProvider.AddConnectedSphero(sphero);
 			// Connect to the robot and move to the next scene designated by the developer
 			if( !m_MultipleSpheros ) {
@@ -224,6 +225,7 @@ public class SpheroConnectionView : MonoBehaviour {
 	            Debug.Log("Player selected row " + selected);
 				// Sweet!
 				if( m_MultipleSpheros && m_RobotConnectingIndex < 0 ) {
+					
 					ConnectSphero(selected);
 				}
             }

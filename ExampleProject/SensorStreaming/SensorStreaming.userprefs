@@ -1,13 +1,10 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Plugins/Sphero/SpheroProvider.cs">
-    <Files>
-      <File FileName="Assets/Scripts/UpdateValues.cs" Line="1" Column="1" />
-      <File FileName="Assets/Plugins/Sphero/SpheroProvider.cs" Line="1" Column="1" />
-    </Files>
-  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/Users/brian/Documents/code/development/unity-plugin/ExampleProject/SensorStreaming/Assets/Plugins/Sphero/SpheroProvider.cs" line="143" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

@@ -27,7 +27,7 @@ public class UpdateValues: MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (!streaming) {
+		if (!streaming && SpheroProvider.GetSharedProvider().GetConnectedSpheros().Count  > 0) {
 			List<Sphero> spheroList = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
 		m_Sphero = spheroList[0];
 		m_Sphero.EnableControllerStreaming(20, 1, SpheroDataStreamingMask.AccelerometerFilteredAll);
