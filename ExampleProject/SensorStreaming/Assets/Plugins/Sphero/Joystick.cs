@@ -205,12 +205,12 @@ public class Joystick : MonoBehaviour {
 			velocity = velocityScale;
 		}
 		if(velocity > 0.0f) {
-			SpheroBridge.Roll((int)degrees, velocity);
+			//SpheroBridge.Roll((int)degrees, velocity);
 			stopped = false;
 			lastHeading = degrees;
 		} else if(velocity == 0.0f && stopped == false) {
 			stopped = true;
-			SpheroBridge.Roll((int)lastHeading, 0.0f);
+			//SpheroBridge.Roll((int)lastHeading, 0.0f);
 		}
 	#endif
 		

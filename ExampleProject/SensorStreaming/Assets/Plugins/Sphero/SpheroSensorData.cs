@@ -3,9 +3,9 @@ using System;
 public class SpheroSensorData {
 
 	public struct ThreeAxisSensor {
-		public ushort x;
-		public ushort y;
-		public ushort z;
+		public int x;
+		public int y;
+		public int z;
 	}
 	
 	private long timeStamp;

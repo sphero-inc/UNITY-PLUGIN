@@ -27,12 +27,13 @@ public class ControlGameObject : MonoBehaviour {
 		SpheroDeviceSensorsData sensorsData = message.Frames[0];
 		
 		yaw1 = sensorsData.AttitudeData.Yaw;
+
 		
 		//
 		float xAcceleration = sensorsData.AccelerometerData.Normalized.X;
 		float yAcceleration = sensorsData.AccelerometerData.Normalized.Y;
 		
-		
+
 		xOffset = 0.3f * xAcceleration;
 		if (transform.position.x + xOffset > 1.0) {
 			xOffset = 1.0f - transform.position.x;
@@ -43,5 +44,4 @@ public class ControlGameObject : MonoBehaviour {
 		
 		
 	}
-
 }

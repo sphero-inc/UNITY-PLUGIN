@@ -9,12 +9,12 @@
 #import <Foundation/Foundation.h>
 
 extern "C" {
-
     typedef void (*ReceiveDeviceMessageCallback)(const char *);
 }
 
 
 @interface RKUNBridge : NSObject {
+    BOOL robotInitialized;
     BOOL robotOnline;
     BOOL controllerStreamingOn;
 }
