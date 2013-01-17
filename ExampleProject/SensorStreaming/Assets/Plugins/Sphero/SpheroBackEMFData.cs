@@ -2,8 +2,8 @@ using System;
 
 public class SpheroBackEMFData : SpheroSensorData {
 	public struct Motors {
-		public ushort right;
-		public ushort left;		
+		public int right;
+		public int left;		
 	}
 	
 	private Motors raw;
@@ -14,10 +14,10 @@ public class SpheroBackEMFData : SpheroSensorData {
 	
 	public SpheroBackEMFData(SpheroDeviceMessageDecoder decoder) : base(decoder)
 	{
-		filtered.right = decoder.DecodeUInt16("filtered.rightMotor");
-		filtered.left = decoder.DecodeUInt16("filtered.leftMotor");
-		raw.right = decoder.DecodeUInt16("raw.rightMotor");
-		raw.left = decoder.DecodeUInt16("raw.leftMotor");
+		filtered.right = decoder.DecodeInt32("filtered.rightMotor");
+		filtered.left = decoder.DecodeInt32("filtered.leftMotor");
+		raw.right = decoder.DecodeInt32("raw.rightMotor");
+		raw.left = decoder.DecodeInt32("raw.leftMotor");
 	}
 
 }

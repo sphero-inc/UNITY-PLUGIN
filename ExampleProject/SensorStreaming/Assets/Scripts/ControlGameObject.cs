@@ -13,10 +13,10 @@ public class ControlGameObject : MonoBehaviour {
 	}
 	
 	void Update () {
-//		transform.Rotate(new Vector3(0,0,yaw1-yaw0),Space.Self);
+		transform.Rotate(new Vector3(0,0,yaw1-yaw0),Space.Self);
 		transform.Translate(xOffset, 0, 0, Space.World);
 //		transform.Translate(0, yOffset, 0, Space.World);s
-//		yaw0 = yaw1;
+		yaw0 = yaw1;
 	}
 	
 	private void ReceiveAsyncMessage(object sender, 
@@ -26,7 +26,7 @@ public class ControlGameObject : MonoBehaviour {
 			(SpheroDeviceSensorsAsyncData)eventArgs.Message;
 		SpheroDeviceSensorsData sensorsData = message.Frames[0];
 		
-//		yaw1 = sensorsData.AttitudeData.Yaw;
+		yaw1 = sensorsData.AttitudeData.Yaw;
 
 		
 		//

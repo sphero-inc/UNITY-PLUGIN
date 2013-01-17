@@ -3,7 +3,9 @@ using System.Collections;
 using System.Runtime.InteropServices;
 
 public class SpheroBridge {
-
+	
+// How do we manage multiple robots from here?	
+	
 	public static float s_calibrateGyroOffset = 0.0f;
 	public static float s_calibrateOffset = 0.0f;
 		
@@ -71,5 +73,12 @@ public class SpheroBridge {
 	[DllImport ("__Internal")]
 #endif
 	public static extern void DisableControllerStreaming();
-				
+	
+	
+#if UNITY_ANDROID
+	[DllImport ("RKUNBridge")]
+#else
+	[DllImport ("__Internal")]
+#endif
+	public static extern void DisconnectRobots();	
 }

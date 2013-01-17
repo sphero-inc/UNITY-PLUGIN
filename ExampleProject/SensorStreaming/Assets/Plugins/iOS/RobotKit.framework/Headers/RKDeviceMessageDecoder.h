@@ -28,5 +28,7 @@
 - (NSInteger)decodeIntegerValueForKey:(NSString *)key;
 - (int64_t)decodeInteger64ValueForKey:(NSString *)key;
 - (BOOL)decodeBOOLValueForKey:(NSString *)key;
+-(id)decodeObjectForKey:(NSString*)key;
+-(float)decodeFloatValueForKey:(NSString*)key;
 
 @end

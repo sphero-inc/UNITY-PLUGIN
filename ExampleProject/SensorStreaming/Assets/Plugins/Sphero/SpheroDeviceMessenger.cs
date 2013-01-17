@@ -8,6 +8,7 @@ public class SpheroDeviceMessenger  {
 	
 	public event MessengerEventHandler ResponseDataReceived;
 	public event MessengerEventHandler AsyncDataReceived;
+	public event MessengerEventHandler NotificationReceived;
 
 	public delegate void MessengerEventHandler(object sender,  MessengerEventArgs eventArgs);
 
@@ -53,6 +54,14 @@ public class SpheroDeviceMessenger  {
 			handler(this, eventArgs);
 		}
 	}
+	
+	protected virtual void OnNotificationMessageReceived(MessengerEventArgs eventArgs)
+	{
+		MessengerEventHandler handler = NotificationReceived;
+		if (handler != null) {
+			handler(this, eventArgs);
+		}
+	}
 
 	[MonoPInvokeCallback (typeof (ReceiveDeviceMessageDelegate))]
 	protected static void ReceiveDeviceMessage(string encodedMessage) 
@@ -64,6 +73,9 @@ public class SpheroDeviceMessenger  {
 		if ( message is SpheroDeviceAsyncMessage) {
 			sharedInstance.OnAsyncMessageReceived(new MessengerEventArgs(message));
 		}	
+		else if( message is SpheroDeviceNotification ) {
+			sharedInstance.OnNotificationMessageReceived(new MessengerEventArgs(message));
+		}
 	}
 	
 #if UNITY_ANDROID

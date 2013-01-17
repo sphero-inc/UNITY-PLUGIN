@@ -196,7 +196,7 @@ public class UnityBridge {
 	                }
 	                
 	                int ctr = dataStreamingProfile.getPacketCounter();
-	                UnityBridge.sharedBridge().handleDataStreaming(DeviceMessageEncoder.encodeMessage(data).toString());
+	                UnityBridge.sharedBridge().sendMessage(DeviceMessageEncoder.encodeMessage(data).toString());
             	}
             	
             	// Call Encoder!

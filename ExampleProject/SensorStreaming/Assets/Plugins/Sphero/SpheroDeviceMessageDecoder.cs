@@ -62,7 +62,7 @@ public class SpheroDeviceMessageDecoder {
 		return value;
 	}
 		
-	public object DecodeString(string key)
+	public string DecodeString(string key)
 	{
 		return (string)DecodeObject(key);
 	}
@@ -79,12 +79,16 @@ public class SpheroDeviceMessageDecoder {
 	
 	public ushort DecodeUInt16(string key)
 	{
-		return Convert.ToUInt16(DecodeObject(key));
+		// To be compatible with Java unsigned numbers are transmitted as hex strings
+		string hexString = DecodeString(key);
+		return Convert.ToUInt16(hexString, 16);
 	}
 	
 	public ulong DecodeUInt64(string key)
 	{
-		return Convert.ToUInt64(DecodeObject(key));
+		// To be compatible with Java unsigned numbers are transmitted as hex strings
+		string hexString = DecodeString(key);
+		return Convert.ToUInt64(hexString, 16);
 	}
 	
 	public float DecodeFloat(string key)

@@ -30,7 +30,10 @@ public class UpdateValues: MonoBehaviour {
 		if (!streaming && SpheroProvider.GetSharedProvider().GetConnectedSpheros().Count  > 0) {
 			List<Sphero> spheroList = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
 		m_Sphero = spheroList[0];
-		m_Sphero.EnableControllerStreaming(20, 1, SpheroDataStreamingMask.AccelerometerFilteredAll);
+		m_Sphero.EnableControllerStreaming(20, 1,
+			SpheroDataStreamingMask.AccelerometerFilteredAll |
+			SpheroDataStreamingMask.QuaternionAll |
+			SpheroDataStreamingMask.IMUAnglesFilteredAll);
 
 			streaming = true;
 		}	
@@ -52,8 +55,6 @@ public class UpdateValues: MonoBehaviour {
 	public GUIStyle labelStyle;
 	
 	void OnGUI() {
-//		Vector3 screenScalar = new Vector3(Screen.width/960, Screen.height/640, 1.0f);
-//		GUI.matrix = Matrix4x4.Scale(screenScalar);
 		
 		GUI.BeginGroup(new Rect(10, 10, 200, 400), boxStyle);
 		GUI.Box(new Rect(0,0,200, 400), "Stream");
@@ -79,16 +80,14 @@ public class UpdateValues: MonoBehaviour {
 		
 		acceleration = sensorsData.AccelerometerData.Normalized;
 
-/*		
 		pitch = sensorsData.AttitudeData.Pitch;
 		roll = sensorsData.AttitudeData.Roll;
 		yaw = sensorsData.AttitudeData.Yaw;
-		
+
 		q0 = sensorsData.QuaternionData.Q0;
 		q1 = sensorsData.QuaternionData.Q1;
 		q2 = sensorsData.QuaternionData.Q2;
 		q3 = sensorsData.QuaternionData.Q3; 
-*/		
 	}
 
 }
