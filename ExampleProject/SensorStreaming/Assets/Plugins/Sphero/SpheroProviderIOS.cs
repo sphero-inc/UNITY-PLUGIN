@@ -44,6 +44,9 @@ public class SpheroProviderIOS : SpheroProvider {
 	 */
 	override public void DisconnectSpheros() {
 		disconnectRobots();
+		foreach( Sphero sphero in m_PairedSpheros) {
+			sphero.ConnectionState = Sphero.Connection_State.Disconnected;
+		}
 	}
 	
 	/* Connect to a robot at index */

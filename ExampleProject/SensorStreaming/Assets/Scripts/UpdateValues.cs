@@ -19,38 +19,51 @@ public class UpdateValues: MonoBehaviour {
 	private float q2 = 1.0f;
 	private float q3 = 1.0f;
 	
-	
+		/* Use this for initialization */
+	void ViewSetup() {
+		// Get Connected Sphero
+		SpheroDeviceMessenger.SharedInstance.NotificationReceived +=
+			 ReceiveNotificationMessage;
+		if( SpheroProvider.GetSharedProvider().GetConnectedSpheros().Count == 0 )
+			Application.LoadLevel("SpheroConnectionScene");
+	}
+
 	// Use this for initialization
 	void Start () {
-		SpheroDeviceMessenger.SharedInstance.AsyncDataReceived += ReceiveAsyncMessage;	
+		ViewSetup();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		if (!streaming && SpheroProvider.GetSharedProvider().GetConnectedSpheros().Count  > 0) {
-			List<Sphero> spheroList = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
+		SpheroDeviceMessenger.SharedInstance.AsyncDataReceived += ReceiveAsyncMessage;	
+		List<Sphero> spheroList = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
 		m_Sphero = spheroList[0];
 		m_Sphero.EnableControllerStreaming(20, 1,
 			SpheroDataStreamingMask.AccelerometerFilteredAll |
 			SpheroDataStreamingMask.QuaternionAll |
 			SpheroDataStreamingMask.IMUAnglesFilteredAll);
 
-			streaming = true;
+		streaming = true;
 		}	
 	}
 	
-	void OnApplicationPause() {
-		Debug.Log("APPLICATION PAUSE");
-		if (streaming) {
-			m_Sphero.DisableControllerStreaming();
+	void OnApplicationPause(bool pause) {
+		if (pause) {
+			if (streaming) {
+				SpheroDeviceMessenger.SharedInstance.AsyncDataReceived -= 
+					ReceiveAsyncMessage;	
+				m_Sphero.DisableControllerStreaming();
+				streaming = false;
+			} 
+			SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
+			SpheroProvider.GetSharedProvider().DisconnectSpheros();
+		}else {
+			ViewSetup();
 			streaming = false;
 		}
 	}
-	
-	void OnApplicationQuit() {
-		Debug.Log("APPLICATION QUIT");
-	}
-	
+		
 	public GUIStyle boxStyle;
 	public GUIStyle labelStyle;
 	
@@ -71,7 +84,7 @@ public class UpdateValues: MonoBehaviour {
 		GUI.EndGroup();
 	}
 	
-		private void ReceiveAsyncMessage(object sender, 
+	private void ReceiveAsyncMessage(object sender, 
 			SpheroDeviceMessenger.MessengerEventArgs eventArgs)
 	{
 		SpheroDeviceSensorsAsyncData message = 
@@ -90,4 +103,16 @@ public class UpdateValues: MonoBehaviour {
 		q3 = sensorsData.QuaternionData.Q3; 
 	}
 
+	/*
+	 * Callback to receive connection notifications 
+	 */
+	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
+	{
+		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
+		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
+			m_Sphero.ConnectionState = Sphero.Connection_State.Disconnected;
+			Application.LoadLevel("NoSpheroConnectedScene");
+		}
+	}
+	
 }

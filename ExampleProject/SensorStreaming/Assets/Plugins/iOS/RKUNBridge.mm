@@ -44,10 +44,18 @@ extern void UnitySendMessage(const char *, const char *, const char *);
 
 -(void)connectToRobot {
     /*Try to connect to the robot*/
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOnline) name:RKDeviceConnectionOnlineNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleDidGainControl:) name:RKRobotDidGainControlNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOffline) name:RKDeviceConnectionOfflineNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOffline) name:RKRobotDidLossControlNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+    	selector:@selector(handleRobotOnline) name:RKDeviceConnectionOnlineNotification 		
+    	object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+    	selector:@selector(handleDidGainControl:) name:RKRobotDidGainControlNotification
+    	object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+    	selector:@selector(handleRobotOffline) name:RKDeviceConnectionOfflineNotification 
+    	object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+    	selector:@selector(handleRobotOffline) name:RKRobotDidLossControlNotification
+    	object:nil];
     robotInitialized = NO;
     if ([[RKRobotProvider sharedRobotProvider] isRobotUnderControl]) {
         [[RKRobotProvider sharedRobotProvider] openRobotConnection];        
@@ -102,10 +110,8 @@ extern void UnitySendMessage(const char *, const char *, const char *);
                                          packetFrames:(uint16_t)frames
                                            sensorMask:(uint64_t)mask
  {
-     if(controllerStreamingOn && !robotOnline) return;
+     if(controllerStreamingOn || !robotOnline) return;
      
-     NSLog(@"Streaming Mask - %llx", mask);
-
      [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOff];
      [RKBackLEDOutputCommand sendCommandWithBrightness:1.0];
      [self setDataStreamingWithSampleRateDivisor:divisor packetFrames:frames sensorMask:mask packetCount:0];
@@ -140,7 +146,17 @@ extern void UnitySendMessage(const char *, const char *, const char *);
 }
 
 - (void)disconnectRobots {
-    [[RKRobotProvider sharedRobotProvider]closeRobotConnection];
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+    	name:RKDeviceConnectionOnlineNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+    	name:RKRobotDidGainControlNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+    	name:RKDeviceConnectionOfflineNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+    	name:RKRobotDidLossControlNotification object:nil];
+
+    [[RKRobotProvider sharedRobotProvider] closeRobotConnection];
+    robotOnline = NO;
 }
 
 extern "C" {
