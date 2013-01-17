@@ -145,23 +145,23 @@ extern void UnitySendMessage(const char *, const char *, const char *);
 
 extern "C" {
     
-    void SetupRobotConnection() {
+    void setupRobotConnection() {
         [[RKUNBridge sharedBridge] connectToRobot];
     }
     
-    bool IsRobotConnected() {
+    bool isRobotConnected() {
         return [[RKUNBridge sharedBridge] isRobotOnline];
     }
     
-    void SetRGB(float red, float green, float blue) {
+    void setRGB(float red, float green, float blue) {
         [RKRGBLEDOutputCommand sendCommandWithRed:red green:green blue:blue];
     }
     
-    void Roll(int heading, float speed) {
+    void roll(int heading, float speed) {
         [RKRollCommand sendCommandWithHeading:heading velocity:speed];
     }
     
-    void SetDataStreaming(uint16_t sampleRateDivisor, uint16_t sampleFrames,
+    void setDataStreaming(uint16_t sampleRateDivisor, uint16_t sampleFrames,
     	 uint64_t sampleMask, uint8_t sampleCount)
     {
         [[RKUNBridge sharedBridge] setDataStreamingWithSampleRateDivisor:sampleRateDivisor
@@ -170,21 +170,21 @@ extern "C" {
                                                              packetCount:sampleCount];
     }
     
-    void EnableControllerStreaming(uint16_t divisor, uint16_t frames, uint64_t mask) {
+    void enableControllerStreaming(uint16_t divisor, uint16_t frames, uint64_t mask) {
         [[RKUNBridge sharedBridge] enableControllerStreamingWithSampleRateDivisor:divisor
                                                                      packetFrames:frames
                                                                        sensorMask:mask];
     }
     
-    void DisableControllerStreaming() {
+    void disableControllerStreaming() {
         [[RKUNBridge sharedBridge] disableControllerStreaming];
     }
     
-    void SetHeading(int heading) {
+    void setHeading(int heading) {
         [RKCalibrateCommand sendCommandWithHeading:heading];
     }
     
-    void SetBackLED(float intensity) {
+    void setBackLED(float intensity) {
         [RKBackLEDOutputCommand sendCommandWithBrightness:intensity];
     }
     
@@ -193,7 +193,7 @@ extern "C" {
         bridge.receiveDeviceMessageCallback = callback;
     }
     
-    void DisconnectRobots() {
+    void disconnectRobots() {
         [[RKUNBridge sharedBridge] disconnectRobots];
     }
 }

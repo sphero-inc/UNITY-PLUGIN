@@ -34,7 +34,7 @@ public class SpheroConnectionView : MonoBehaviour {
 	// Title Variables
 	int m_TitleWidth = 120;
 	int m_TitleHeight = 40;
-	string m_Title = "Connect to a Sphero";
+	string m_Title;
 	
 	// Sphero Name Label Variable
 	int m_SpheroLabelWidth = 250;
@@ -63,28 +63,38 @@ public class SpheroConnectionView : MonoBehaviour {
     Vector2 listMargin = new Vector2(40,40);
     private Rect windowRect;
 	
-	void setup() {
+	/* Use this to initialize the view */
+	private void ViewSetup() {
 		#if UNITY_ANDROID
-			setupAndroid();
+			SetupAndroid();
 		#elif UNITY_IPHONE
-			setupIOS();
+			SetupIOS();
 		#else
-
+			// Display that it doesn't work with these platforms
 		#endif
 	}
 	
-	// Use these for initialization
+	/* Use these for initialization */
 	void Start () {	
-		setup();
+		ViewSetup();
 	}
-	void OnLevelWasLoaded () { 
-		setup();
+	
+	/* This is called when the application returns from background or entered from NoSpheroConnectionScene */
+	void OnApplicationPause(bool pause) {
+		if( pause ) {
+			// Initialize the device messenger which sets up the callback
+			SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
+			m_SpheroProvider.DisconnectSpheros();
+		}
+		else {
+			ViewSetup();
+		}
 	}
 	
 	/*
 	 * Called if the OS is iOS to immediately try to connect to the robot
 	 */
-	void setupIOS() {
+	void SetupIOS() {
 		// initialize the Sphero Provider (Cannot call in the initialization of member variables or you will get a crash!)
 		m_SpheroProvider = SpheroProvider.GetSharedProvider();
 		Application.LoadLevel("NoSpheroConnectedScene");
@@ -93,7 +103,7 @@ public class SpheroConnectionView : MonoBehaviour {
 	/*
 	 * Called if the OS is Android to show the Connection Scene
 	 */
-	void setupAndroid() {
+	void SetupAndroid() {
 		
 		// initialize the Sphero Provider (Cannot call in the initialization of member variables or you will get a crash!)
 		m_SpheroProvider = SpheroProvider.GetSharedProvider();
@@ -104,6 +114,10 @@ public class SpheroConnectionView : MonoBehaviour {
 			m_RobotNames = new string[0];
 		}
 		else {
+			m_Title = "Connect to a Sphero";
+			// Refreshes the list of robots
+			m_SpheroProvider.FindRobots();
+			
 			// Initialize the device messenger which sets up the callback
 			SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
 	
@@ -136,12 +150,6 @@ public class SpheroConnectionView : MonoBehaviour {
 		else if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTION_FAILED ) {
 			m_Title = "Connection Failed";
 		}
-	}
-	
-	void OnApplicationPause() {
-		// Initialize the device messenger which sets up the callback
-		SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
-		m_SpheroProvider.DisconnectSpheros();
 	}
 	
 	// Update is called once per frame
@@ -221,11 +229,15 @@ public class SpheroConnectionView : MonoBehaviour {
 	// Called when the GUI should update
 	void OnGUI() {
 #if UNITY_ANDROID
+		
 		if( m_RobotNames == null ) return;
 		GUI.skin = m_SpheroConnectionSkin;
 		
 		// Draw a title lable
 		GUI.Label(new Rect(m_ViewPadding,m_ViewPadding,Screen.width-(m_ViewPadding*2),m_TitleHeight), m_Title, "label");
+		
+		// Disable interface if we are trying to connect to a robot
+		if( m_SpheroProvider.GetConnectingSphero() != null ) GUI.enabled = false;
 		
 		// Set up the scroll view that holds all the Sphero names
 		int scrollY = m_ViewPadding + m_TitleHeight + m_ElementPadding*2;

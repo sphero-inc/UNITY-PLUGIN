@@ -20,35 +20,8 @@ public class SpheroIOS : Sphero {
 	 * @param blue the amount of blue from (0.0 - 1.0) intensity
 	 */
 	override public void SetRGBLED(float red, float green, float blue) {
-
-		SpheroBridge.SetRGB(red,green,blue);
-		
-		// Set the alpha to 1
-		m_Color = 255;
-		m_Color = m_Color << 8;
-		// Set red bit and shift 8 left
-		m_Color += (int)(255 * red);
-		m_Color = m_Color << 8;
-		// Set green bit and shift 8 left
-		m_Color += (int)(255 * green);
-		m_Color = m_Color << 8;
-		// Set blue bit
-		m_Color += (int)(255 * blue);
-	}
-	
-	/*
-	 * Change Sphero's color to desired output
-	 * @param color is a hexadecimal representation of color
-	 */
-	override public void SetRGBLED(int color) {
-		
-		int red = (color & 0x00FF0000) >> 16;
-		int green = (color & 0x0000FF00) >> 8;
-		int blue = color & 0x000000FF;
-		
-		SpheroBridge.SetRGB(red/255,green/255,blue/255);
-		
-		m_Color = color;
+		setRGB(red,green,blue);
+		m_RGBLEDColor = new Color(red, green, blue, 1.0f);
 	}
 	
 	/**
@@ -58,14 +31,14 @@ public class SpheroIOS : Sphero {
      * @param sensorMask Bitwise selector of data sources to stream
 	 */
 	override public void EnableControllerStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask) {		
-		SpheroBridge.EnableControllerStreaming(divisor, packetFrames, sensorMask);
+		enableControllerStreaming(divisor, packetFrames, sensorMask);
 	}
 	
 	/**
 	 * Disable controller data streaming
 	 */
 	override public void DisableControllerStreaming() {
-			SpheroBridge.DisableControllerStreaming();
+		disableControllerStreaming();
 	}
 	
 	/**
@@ -76,8 +49,26 @@ public class SpheroIOS : Sphero {
      * @param packetCount Packet count (set to 0 for unlimited streaming) 
 	 */
 	override public void SetDataStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask, ushort packetCount) {
-		SpheroBridge.SetDataStreaming(divisor, packetFrames, sensorMask, (byte)packetCount);
+		setDataStreaming(divisor, packetFrames, sensorMask, (byte)packetCount);
 	}
+	
+	/* Native Bridge Functions from RKUNBridge.mm */
+	[DllImport ("__Internal")]
+	private static extern void setRGB(float red, float green, float blue);
+	[DllImport ("__Internal")]
+	private static extern void roll(int heading, float speed);
+	[DllImport ("__Internal")]
+	private static extern void setHeading(int heading);
+	[DllImport ("__Internal")]
+	private static extern void setBackLED(float intensity);
+	[DllImport ("__Internal")]
+	private static extern void setDataStreaming(ushort sampleRateDivisor, 
+		ushort sampleFrames, SpheroDataStreamingMask sampleMask, byte sampleCount);
+	[DllImport ("__Internal")]
+	private static extern void enableControllerStreaming(ushort sampleRateDivisor,
+		ushort sampleFrames, SpheroDataStreamingMask sampleMask);
+	[DllImport ("__Internal")]
+	private static extern void disableControllerStreaming();
 }
 
 #endif
