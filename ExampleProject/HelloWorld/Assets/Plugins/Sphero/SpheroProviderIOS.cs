@@ -43,13 +43,13 @@ public class SpheroProviderIOS : SpheroProvider {
 	 * Call to properly disconnect Spheros.  Call in OnApplicationPause 
 	 */
 	override public void DisconnectSpheros() {
-		SpheroBridge.DisconnectRobots();
+		disconnectRobots();
 	}
 	
 	/* Connect to a robot at index */
 	override public void Connect(int index) {
 		// Don't try to connect to multiple Spheros at once
-		SpheroBridge.SetupRobotConnection();
+		setupRobotConnection();
 	}	
 	
 	/*
@@ -65,6 +65,14 @@ public class SpheroProviderIOS : SpheroProvider {
 	override public void FindRobots() {}
 	/* Check if bluetooth is on */
 	override public bool IsAdapterEnabled() { return true; }
+	
+	/* Native Bridge Functions from RKUNBridge.mm */
+	[DllImport ("__Internal")]
+	private static extern void setupRobotConnection();
+	[DllImport ("__Internal")]
+	private static extern bool isRobotConnected();
+	[DllImport ("__Internal")]
+	private static extern void disconnectRobots();	
 }
 
 #endif

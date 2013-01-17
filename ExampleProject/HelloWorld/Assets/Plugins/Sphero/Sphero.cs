@@ -29,12 +29,10 @@ public abstract class Sphero {
 		get{ return this.m_DeviceInfo; }
 	}
 	
-	/* Current Sphero Color */
-	protected int m_Color;
-	public int Color 
-	{
-		get{ return this.m_Color; }
-		set{ this.m_Color = value; }
+	/* Sphero's RGB LED color */
+	protected Color m_RGBLEDColor;
+	public Color RGBLEDColor {
+		get{ return this.m_RGBLEDColor; }
 	}
 	
 	/* Connection State */
@@ -52,38 +50,20 @@ public abstract class Sphero {
 	public Sphero() {}
 	
 	/*
-	 * Get the current red color of the ball 
-	 */ 
-	public float GetRedIntensity() {
-		return (m_Color & 0x00FF0000) >> 16;
-	}
-	
-	/*
-	 * Get the current green color of the ball 
-	 */ 
-	public float GetGreenIntensity() {
-		return (m_Color & 0x0000FF00) >> 8;
-	}
-	
-	/*
-	 * Get the current blue color of the ball 
-	 */ 
-	public float GetBlueIntensity() {
-		return m_Color & 0x000000FF;
-	}
-	
-	/*
 	 * Change Sphero's color to desired output
 	 * @param red the amount of red from (0.0 - 1.0) intensity
 	 * @param green the amount of green from (0.0 - 1.0) intensity
 	 * @param blue the amount of blue from (0.0 - 1.0) intensity
 	 */
 	abstract public void SetRGBLED(float red, float green, float blue);
-	/*
-	 * Change Sphero's color to desired output
-	 * @param color is a hexadecimal representation of color
+	/**
+	 * Start Streaming Data to Unity
+     * @param divisor Divisor of the maximum sensor sampling rate (400 Hz)
+     * @param packetFrames Number of samples created on the device before it sends a packet to the phone with samples
+     * @param sensorMask Bitwise selector of data sources to stream
+     * @param packetCount Packet count (set to 0 for unlimited streaming) 
 	 */
-	abstract public void SetRGBLED(int color);
+	abstract public void SetDataStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask, ushort packetCount);
 	/**
 	 * Enable controller data streaming with infinite packets
      * @param divisor Divisor of the maximum sensor sampling rate (400 Hz)
@@ -94,13 +74,5 @@ public abstract class Sphero {
 	/**
 	 * Disable controller data streaming
 	 */
-	abstract public void DisableControllerStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask);
-	/**
-	 * Start Streaming Data to Unity
-     * @param divisor Divisor of the maximum sensor sampling rate (400 Hz)
-     * @param packetFrames Number of samples created on the device before it sends a packet to the phone with samples
-     * @param sensorMask Bitwise selector of data sources to stream
-     * @param packetCount Packet count (set to 0 for unlimited streaming) 
-	 */
-	abstract public void SetDataStreaming(ushort divisor, ushort packetFrames, SpheroDataStreamingMask sensorMask, ushort packetCount);
+	abstract public void DisableControllerStreaming();
 }

@@ -27,40 +27,39 @@ public class NoSpheroConnectedView : MonoBehaviour {
 	// UI Padding Variables
 	int m_ViewPadding = 20;
 	
-	// Use this for initialization
 	void Start () {	
-		
-		// Try to connect on iOS
-		#if UNITY_ANDROID
-		#elif UNITY_IPHONE
-			
-		#else
-			// Pop-up message that Sphero doesn't work with this platform?
-		#endif
+		ViewSetup();
 	}
 	
-	void OnLevelWasLoaded () { 
+	/* Use this for initialization */
+	void ViewSetup() {
 		SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
-		#if UNITY_ANDROID
-		#elif UNITY_IPHONE
-			SpheroBridge.SetupRobotConnection();	
-		#else
-			// Pop-up message that Sphero doesn't work with this platform?
+		#if UNITY_IPHONE
+			// Connect first Sphero available on iOS
+			SpheroProvider.GetSharedProvider().Connect(0);	
 		#endif
 	}
 	
-	void OnApplicationPause() {
-		SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
-		SpheroProvider.GetSharedProvider().DisconnectSpheros();
+	/* This is called when the application returns from or enters background */
+	void OnApplicationPause(bool pause) {
+		if( pause ) {
+			SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
+		}
+		else {
+			ViewSetup();
+		}
 	}
 	
-		/*
+	/*
 	 * Callback to receive connection notifications 
 	 */
 	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
 	{
-		// Go to the desired scene
-		Application.LoadLevel (m_NextLevel); 
+		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
+		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTED ) {
+			// Go to the desired scene
+			Application.LoadLevel (m_NextLevel); 
+		}
 	}
 	
 	// Update is called once per frame
