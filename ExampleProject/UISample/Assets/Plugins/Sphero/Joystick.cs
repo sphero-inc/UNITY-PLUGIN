@@ -9,6 +9,7 @@ public class Joystick : MonoBehaviour {
 	};
 
 	private int lastFingerId = -1;						// Finger last used for this joystick
+	private bool firstTouch = true;
 
 	public float velocityScale = 0.6f;					// The Max velocity the joystick can make Sphero go
 	public GUITexture puck;								// Joystick puck graphic
@@ -116,8 +117,16 @@ public class Joystick : MonoBehaviour {
 		float touchRadius = 0;
 		float radius = (guiBoundary.max.y - guiBoundary.min.y)*0.5f;
 		
-		if ( count == 0 )
+		if ( count == 0 ) {
+			if(stopped == false) {
+				stopped = true;
+				foreach( Sphero sphero in m_Spheros ) {
+					sphero.Roll((int)lastHeading,0.0f);	
+				}
+			}
+			firstTouch = true;
 			ResetJoystick();
+		}
 		else
 		{
 			for(int i =0; i < count; i++)
@@ -126,7 +135,7 @@ public class Joystick : MonoBehaviour {
 				Vector2 guiTouchPos = touch.position - guiTouchOffset;
 		
 				bool shouldLatchFinger = false;
-				if ( puck.HitTest( touch.position ) )
+				if ( puck.HitTest( touch.position ) && firstTouch )
 				{
 					shouldLatchFinger = true;
 				}		
@@ -153,38 +162,36 @@ public class Joystick : MonoBehaviour {
 						
 					puck.pixelInset = new Rect(clampedPosition.x, clampedPosition.y, puck.pixelInset.width, puck.pixelInset.height);
 					
+					// Convert to Sphero heading
+					headingRad = (headingRad + Mathf.PI*2.0f) % (Mathf.PI*2.0f);
+					headingRad -= Mathf.PI * 0.5f;
+					if( headingRad < 0 ) headingRad += Mathf.PI*2.0f;
+					float degrees = 360 - (Mathf.Rad2Deg * headingRad);
+				
+					float velocity = touchRadius / radius;
+					#if !UNITY_EDITOR
+						velocity = velocity * velocityScale;
+						if(velocity > velocityScale) {
+							velocity = velocityScale;
+						}
+						if(velocity > 0.0f) {
+							Debug.Log("Vel="+velocity);						
+							foreach( Sphero sphero in m_Spheros ) {
+								sphero.Roll((int)degrees,velocity);	
+							}
+							stopped = false;
+							lastHeading = degrees;
+						}
+					#endif
+					
 					if ( touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled )
 						ResetJoystick();					
-				}			
+				}	
+				
+				firstTouch = false;
 			}
 		}
 		
-		Debug.Log("heading"+headingRad);
-		// Convert to Sphero heading
-		headingRad = (headingRad + Mathf.PI*2.0f) % (Mathf.PI*2.0f);
-		headingRad -= Mathf.PI * 0.5f;
-		if( headingRad < 0 ) headingRad += Mathf.PI*2.0f;
-		float degrees = Mathf.Rad2Deg * headingRad;
-	
-		float velocity = touchRadius / radius;
-		#if !UNITY_EDITOR
-			velocity = velocity * velocityScale;
-			if(velocity > velocityScale) {
-				velocity = velocityScale;
-			}
-			if(velocity > 0.0f) {
-				foreach( Sphero sphero in m_Spheros ) {
-					sphero.Roll((int)degrees,velocity);	
-				}
-				stopped = false;
-				lastHeading = degrees;
-			} else if(velocity == 0.0f && stopped == false) {
-				stopped = true;
-				foreach( Sphero sphero in m_Spheros ) {
-					sphero.Roll((int)lastHeading,0.0f);	
-				}
-			}
-		#endif
 		
 	}
 }
