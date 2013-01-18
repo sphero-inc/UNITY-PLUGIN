@@ -147,6 +147,7 @@ public class UnityBridge {
 		// Turn off stabilization and turn on back LED
 		StabilizationCommand.sendCommand(robot, false);
 		BackLEDOutputCommand.sendCommand(robot, 1.0f);
+
 		// Request data streaming
 		this.setDataStreaming(robot, divisor, packetFrames, sensorMask, 0);
 	}
@@ -157,8 +158,9 @@ public class UnityBridge {
 	 */
 	public void disableControllerStreaming(Robot robot) {
 		// Turn on stabilization and turn off back LED
-		StabilizationCommand.sendCommand(robot, false);
-		BackLEDOutputCommand.sendCommand(robot, 1.0f);
+		StabilizationCommand.sendCommand(robot, true);
+		BackLEDOutputCommand.sendCommand(robot, 0.0f);
+
 		// Disable data streaming and delete profile
 		SetDataStreamingCommand.sendCommand(robot,0,0,0,0);
 		if( mRobotDataStreamingProfiles.containsKey(robot) ) {
