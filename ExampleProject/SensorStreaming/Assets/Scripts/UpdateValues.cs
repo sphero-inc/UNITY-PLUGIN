@@ -19,7 +19,7 @@ public class UpdateValues: MonoBehaviour {
 	private float q2 = 1.0f;
 	private float q3 = 1.0f;
 	
-		/* Use this for initialization */
+	/* Use this for initialization */
 	void ViewSetup() {
 		// Get Connected Sphero
 		SpheroDeviceMessenger.SharedInstance.NotificationReceived +=
@@ -35,28 +35,33 @@ public class UpdateValues: MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (!streaming && SpheroProvider.GetSharedProvider().GetConnectedSpheros().Count  > 0) {
-		SpheroDeviceMessenger.SharedInstance.AsyncDataReceived += ReceiveAsyncMessage;	
-		List<Sphero> spheroList = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
-		m_Sphero = spheroList[0];
-		m_Sphero.EnableControllerStreaming(20, 1,
-			SpheroDataStreamingMask.AccelerometerFilteredAll |
-			SpheroDataStreamingMask.QuaternionAll |
-			SpheroDataStreamingMask.IMUAnglesFilteredAll);
+		if (!streaming && 
+			SpheroProvider.GetSharedProvider().GetConnectedSpheros().Count  > 0) 
+		{
+			SpheroDeviceMessenger.SharedInstance.AsyncDataReceived += ReceiveAsyncMessage;	
+			List<Sphero> spheroList =
+				SpheroProvider.GetSharedProvider().GetConnectedSpheros();
+			m_Sphero = spheroList[0];
+			m_Sphero.EnableControllerStreaming(20, 1,
+				SpheroDataStreamingMask.AccelerometerFilteredAll |
+				SpheroDataStreamingMask.QuaternionAll |
+				SpheroDataStreamingMask.IMUAnglesFilteredAll);
 
-		streaming = true;
+			streaming = true;
 		}	
 	}
 	
 	void OnApplicationPause(bool pause) {
 		if (pause) {
+			// Unregister event handlers when the applications pauses.
 			if (streaming) {
 				SpheroDeviceMessenger.SharedInstance.AsyncDataReceived -= 
 					ReceiveAsyncMessage;	
 				m_Sphero.DisableControllerStreaming();
 				streaming = false;
 			} 
-			SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
+			SpheroDeviceMessenger.SharedInstance.NotificationReceived -= 
+				ReceiveNotificationMessage;
 			SpheroProvider.GetSharedProvider().DisconnectSpheros();
 		}else {
 			ViewSetup();
@@ -68,25 +73,27 @@ public class UpdateValues: MonoBehaviour {
 	public GUIStyle labelStyle;
 	
 	void OnGUI() {
-		
-		GUI.BeginGroup(new Rect(10, 10, 200, 400), boxStyle);
-		GUI.Box(new Rect(0,0,200, 400), "Stream");
-		GUI.Label(new Rect(4,30,180,36), "accel x: " + acceleration.X, labelStyle);
-		GUI.Label(new Rect(4,66,180,36), "accel y: " + acceleration.Y, labelStyle);
-		GUI.Label(new Rect(4,102,180,36), "accel z: " + acceleration.Z, labelStyle);
-		GUI.Label(new Rect(4,138,180,36), "pitch: " + pitch, labelStyle); 
-		GUI.Label(new Rect(4,174,180,36), "roll: " + roll, labelStyle);
-		GUI.Label(new Rect(4,210,180,36), "yaw: " + yaw, labelStyle);
-		GUI.Label(new Rect(4,246,180,36), "q0: " + q0, labelStyle);
-		GUI.Label(new Rect(4,282,180,36), "q1: " + q1, labelStyle);
-		GUI.Label(new Rect(4,318,180,36), "q2: " + q2, labelStyle);
-		GUI.Label(new Rect(4,354,180,36), "q3: " + q3, labelStyle);
+		// Upate values
+		GUI.BeginGroup(new Rect(10, 10, 250, 400));
+		GUI.Box(new Rect(0,0,250, 400), "", boxStyle);
+		GUI.Label(new Rect(4,30,242,36), "accel x: " + acceleration.X, labelStyle);
+		GUI.Label(new Rect(4,66,242,36), "accel y: " + acceleration.Y, labelStyle);
+		GUI.Label(new Rect(4,102,242,36), "accel z: " + acceleration.Z, labelStyle);
+		GUI.Label(new Rect(4,138,242,36), "pitch: " + pitch, labelStyle); 
+		GUI.Label(new Rect(4,174,242,36), "roll: " + roll, labelStyle);
+		GUI.Label(new Rect(4,210,242,36), "yaw: " + yaw, labelStyle);
+		GUI.Label(new Rect(4,246,242,36), "q0: " + q0, labelStyle);
+		GUI.Label(new Rect(4,282,242,36), "q1: " + q1, labelStyle);
+		GUI.Label(new Rect(4,318,242,36), "q2: " + q2, labelStyle);
+		GUI.Label(new Rect(4,354,242,36), "q3: " + q3, labelStyle);
 		GUI.EndGroup();
 	}
 	
 	private void ReceiveAsyncMessage(object sender, 
 			SpheroDeviceMessenger.MessengerEventArgs eventArgs)
 	{
+		// Handler method for the streaming data. This code copies the data values
+		// to instance variables, which are updated on the screen in the OnGUI method.
 		SpheroDeviceSensorsAsyncData message = 
 			(SpheroDeviceSensorsAsyncData)eventArgs.Message;
 		SpheroDeviceSensorsData sensorsData = message.Frames[0];

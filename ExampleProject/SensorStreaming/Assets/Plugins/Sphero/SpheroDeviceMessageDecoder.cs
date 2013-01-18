@@ -42,7 +42,6 @@ public class SpheroDeviceMessageDecoder {
 		if (value is Array) {
 			// need to decode the objects in the array
 			Dictionary<string,object>[] encodedArray = (Dictionary<string,object>[])value;
-			UnityEngine.Debug.Log(encodedArray.Length);
 			Object[] decodedArray = new Object[encodedArray.Length];
 			int index = 0;
 			foreach(Dictionary<string,object> encodedDictionary in encodedArray)
