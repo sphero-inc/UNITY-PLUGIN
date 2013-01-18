@@ -6,10 +6,11 @@
       <File FileName="Assets/Plugins/Sphero/SpheroIOS.cs" Line="39" Column="3" />
       <File FileName="Assets/Plugins/Sphero/Sphero.cs" Line="49" Column="5" />
       <File FileName="Assets/Plugins/Sphero/SpheroAndroid.cs" Line="47" Column="55" />
-      <File FileName="Assets/Plugins/Sphero/SpheroProvider.cs" Line="59" Column="22" />
-      <File FileName="Assets/Plugins/Sphero/SpheroProviderIOS.cs" Line="48" Column="3" />
-      <File FileName="Assets/Plugins/Sphero/Joystick.cs" Line="176" Column="31" />
-      <File FileName="Assets/Scripts/UISample.cs" Line="1" Column="5" />
+      <File FileName="Assets/Plugins/Sphero/SpheroProvider.cs" Line="38" Column="59" />
+      <File FileName="Assets/Plugins/Sphero/SpheroProviderIOS.cs" Line="27" Column="3" />
+      <File FileName="Assets/Plugins/Sphero/Joystick.cs" Line="51" Column="21" />
+      <File FileName="Assets/Scripts/UISample.cs" Line="10" Column="21" />
+      <File FileName="Assets/Plugins/Sphero/SpheroProviderAndroid.cs" Line="114" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
