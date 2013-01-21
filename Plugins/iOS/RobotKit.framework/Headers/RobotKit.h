@@ -39,6 +39,7 @@
 #import <RobotKit/RKJumpToMainAppCommand.h>
 //// sphero
 #import <RobotKit/RKCalibrateCommand.h>
+#import <RobotKit/RKSetHeadingCommand.h>
 #import <RobotKit/RKRGBLEDOutputCommand.h>
 #import <RobotKit/RKBackLEDOutputCommand.h>
 #import <RobotKit/RKRollCommand.h>
@@ -81,6 +82,7 @@
 #import <RobotKit/RKJumpToMainAppResponse.h>
 //// sphero
 #import <RobotKit/RKCalibrateResponse.h>
+#import <RobotKit/RKSetHeadingResponse.h>
 #import <RobotKit/RKRGBLEDOutputResponse.h>
 #import <RobotKit/RKBackLEDOutputResponse.h>
 #import <RobotKit/RKRollResponse.h>
@@ -180,6 +182,20 @@
 #import <RobotKit/RKAbortMacroResponse.h>
 #endif
 
+// Messages
+#if defined (SRCLIBRARY)
+#import <RobotKit/RKDeviceMessage.h>
+#import <RobotKit/RKDeviceMessageEncoder.h>
+#import <RobotKit/RKDeviceMessageDecoder.h>
+#import <RobotKit/RKDeviceNotification.h>
+#import <RobotKit/RKDeviceMessageCoding.h>
+#else
+#import <RobotKit/RKDeviceMessage.h>
+#import <RobotKit/RKDeviceMessageEncoder.h>
+#import <RobotKit/RKDeviceMessageDecoder.h>
+#import <RobotKit/RKDeviceNotification.h>
+#import <RobotKit/RKDeviceMessageCoding.h>
+#endif
 
 // orbBasic
 #if defined (SRCLIBRARY)

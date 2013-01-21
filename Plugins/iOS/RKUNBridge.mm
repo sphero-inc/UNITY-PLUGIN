@@ -10,17 +10,19 @@
 #import <RobotKit/RobotKit.h>
 
 static RKUNBridge *sharedBridge = nil;
-void UnityPause(bool pause);
+extern void UnityPause(bool pause);
+extern void UnitySendMessage(const char *, const char *, const char *);
 
 @implementation RKUNBridge
 
-@synthesize lastData;
+
+@synthesize receiveDeviceMessageCallback;
 
 -(id)init {
     self = [super init];
     
     robotOnline = NO;
-    dataStreamingOn = NO;
+    controllerStreamingOn = NO;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillEnterBackground) name:UIApplicationWillTerminateNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillEnterBackground) name:UIApplicationWillResignActiveNotification object:nil];
@@ -42,44 +44,90 @@ void UnityPause(bool pause);
 
 -(void)connectToRobot {
     /*Try to connect to the robot*/
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOnline) name:RKDeviceConnectionOnlineNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+    	selector:@selector(handleRobotOnline) name:RKDeviceConnectionOnlineNotification 		
+    	object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+    	selector:@selector(handleDidGainControl:) name:RKRobotDidGainControlNotification
+    	object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+    	selector:@selector(handleRobotOffline) name:RKDeviceConnectionOfflineNotification 
+    	object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+    	selector:@selector(handleRobotOffline) name:RKRobotDidLossControlNotification
+    	object:nil];
+    robotInitialized = NO;
     if ([[RKRobotProvider sharedRobotProvider] isRobotUnderControl]) {
         [[RKRobotProvider sharedRobotProvider] openRobotConnection];        
     }
+    robotInitialized = YES;
 }
 
 -(void)appWillEnterBackground {
-    [self disableDataStreaming];
-    [RKBackLEDOutputCommand sendCommandWithBrightness:0.0];
     [[RKRobotProvider sharedRobotProvider] closeRobotConnection];
 }
 
-- (void)handleRobotOnline { 
+- (void)handleRobotOnline {
+    RKDeviceNotification* notification = [[RKDeviceNotification alloc]initWithNotificationType:RKDeviceNotificationTypeConnected];
+    // Send serialized object to Unity
+    if (receiveDeviceMessageCallback != NULL) {
+        RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:notification];
+        receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
+    }
     robotOnline = YES;
 }
 
--(void)enableDataStreaming {
-    if(dataStreamingOn && !robotOnline) return;    
+- (void)handleRobotOffline {
+    RKDeviceNotification* notification = [[RKDeviceNotification alloc]initWithNotificationType:RKDeviceNotificationTypeDisconnected];
+    // Send serialized object to Unity
+    if (receiveDeviceMessageCallback != NULL) {
+        RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:notification];
+        receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
+    }
+    robotOnline = NO;
+}
+
+-(void)handleDidGainControl:(NSNotification*)notification {
+    if(!robotInitialized)return;
+    [[RKRobotProvider sharedRobotProvider] openRobotConnection];
+}
+
+- (void)setDataStreamingWithSampleRateDivisor:(uint16_t)divisor
+                                 packetFrames:(uint16_t)frames
+                                   sensorMask:(uint64_t)mask
+                                  packetCount:(uint8_t)count
+{
+    if (!robotOnline) return;
     
     [[RKDeviceMessenger sharedMessenger] addDataStreamingObserver:self selector:@selector(handleDataStreaming:)];
-    
-    [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOff];
-    [RKBackLEDOutputCommand sendCommandWithBrightness:1.0];
-    [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:1.0 blue:1.0];
-    [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:20 packetFrames:1 sensorMask:RKDataStreamingMaskAccelerometerXFiltered | RKDataStreamingMaskAccelerometerYFiltered | RKDataStreamingMaskAccelerometerZFiltered | RKDataStreamingMaskIMUPitchAngleFiltered | RKDataStreamingMaskIMURollAngleFiltered | RKDataStreamingMaskIMUYawAngleFiltered  packetCount:0];
-    
-    dataStreamingOn = YES;
+    [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:divisor
+                                                   packetFrames:frames
+                                                     sensorMask:mask
+                                                    packetCount:count];
+}
+
+-(void)enableControllerStreamingWithSampleRateDivisor:(uint16_t)divisor
+                                         packetFrames:(uint16_t)frames
+                                           sensorMask:(uint64_t)mask
+ {
+     if(controllerStreamingOn || !robotOnline) return;
+     
+     [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOff];
+     [RKBackLEDOutputCommand sendCommandWithBrightness:1.0];
+     [self setDataStreamingWithSampleRateDivisor:divisor packetFrames:frames sensorMask:mask packetCount:0];
+     controllerStreamingOn = YES;
     
 }
 
--(void)disableDataStreaming {
-    //if(!dataStreamingOn) return;
+-(void)disableControllerStreaming {
+    if (!controllerStreamingOn) return;
     
     [[RKDeviceMessenger sharedMessenger] removeDataStreamingObserver:self];
     
     [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:0 packetFrames:0 sensorMask:0  packetCount:0];
+    [RKBackLEDOutputCommand sendCommandWithBrightness:0.0];
     [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOn];
-    dataStreamingOn = NO;
+    controllerStreamingOn = NO;
     
 }
 
@@ -87,66 +135,83 @@ void UnityPause(bool pause);
 {
     if ([data isKindOfClass:[RKDeviceSensorsAsyncData class]]) {
         RKDeviceSensorsAsyncData *sensors_data = (RKDeviceSensorsAsyncData *)data;
-        //NSLog(@"sensors_data.dataFrames - %@", sensors_data.dataFrames);
-
-        RKUNData sensorData;
+        RKDeviceSensorsData *data = [sensors_data.dataFrames objectAtIndex:0];
         
-        //lastYaw = 0.0;
-        for (RKDeviceSensorsData *data in sensors_data.dataFrames) {
-            RKAccelerometerData *accelerometer_data = data.accelerometerData;
-            sensorData.x = accelerometer_data.acceleration.x;
-            sensorData.y = accelerometer_data.acceleration.y;
-            sensorData.z = accelerometer_data.acceleration.z;
+        // Send serialized object to Unity
+        if (receiveDeviceMessageCallback != NULL) {
+            RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:sensors_data];
+            receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
         }
-        sensorData.yaw = [[[sensors_data.dataFrames objectAtIndex:0] attitudeData] yaw];
-        sensorData.pitch = [[[sensors_data.dataFrames objectAtIndex:0] attitudeData] pitch];
-        sensorData.roll = [[[sensors_data.dataFrames objectAtIndex:0] attitudeData] roll];
-        
-        self.lastData = sensorData;
-        
     }
+}
+
+- (void)disconnectRobots {
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+    	name:RKDeviceConnectionOnlineNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+    	name:RKRobotDidGainControlNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+    	name:RKDeviceConnectionOfflineNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+    	name:RKRobotDidLossControlNotification object:nil];
+
+    [[RKRobotProvider sharedRobotProvider] closeRobotConnection];
+    robotOnline = NO;
 }
 
 extern "C" {
     
-    void _RKUNSetupRobotConnection() {
+    void setupRobotConnection() {
         [[RKUNBridge sharedBridge] connectToRobot];
     }
     
-    bool _RKUNIsRobotConnected() {
+    bool isRobotConnected() {
         return [[RKUNBridge sharedBridge] isRobotOnline];
     }
     
-    void _RKUNRGB(float red, float green, float blue) {
+    void setRGB(float red, float green, float blue) {
         [RKRGBLEDOutputCommand sendCommandWithRed:red green:green blue:blue];
     }
     
-    void _RKUNRoll(int heading, float speed) {
+    void roll(int heading, float speed) {
         [RKRollCommand sendCommandWithHeading:heading velocity:speed];
     }
     
-    
-    struct RKUNData _RKUNSensorData() {
-        return [RKUNBridge sharedBridge].lastData;
+    void setDataStreaming(uint16_t sampleRateDivisor, uint16_t sampleFrames,
+    	 uint64_t sampleMask, uint8_t sampleCount)
+    {
+        [[RKUNBridge sharedBridge] setDataStreamingWithSampleRateDivisor:sampleRateDivisor
+                                                            packetFrames:sampleFrames
+                                                              sensorMask:sampleMask
+                                                             packetCount:sampleCount];
     }
     
-    void _enableDataStreaming() {
-        [[RKUNBridge sharedBridge] enableDataStreaming];
+    void enableControllerStreaming(uint16_t divisor, uint16_t frames, uint64_t mask) {
+        [[RKUNBridge sharedBridge] enableControllerStreamingWithSampleRateDivisor:divisor
+                                                                     packetFrames:frames
+                                                                       sensorMask:mask];
     }
     
-    void _disableDataStreaming() {
-        [[RKUNBridge sharedBridge] disableDataStreaming];
+    void disableControllerStreaming() {
+        [[RKUNBridge sharedBridge] disableControllerStreaming];
     }
     
-    void _RKUNCalibrate(int heading) {
+    void setHeading(int heading) {
         [RKCalibrateCommand sendCommandWithHeading:heading];
     }
     
-    void _RKUNBackLED(float intensity) {
+    void setBackLED(float intensity) {
         [RKBackLEDOutputCommand sendCommandWithBrightness:intensity];
     }
     
-	
+	void _RegisterRecieveDeviceMessageCallback(ReceiveDeviceMessageCallback callback) {
+        RKUNBridge *bridge = [RKUNBridge sharedBridge];
+        bridge.receiveDeviceMessageCallback = callback;
+    }
+    
+    void disconnectRobots() {
+        [[RKUNBridge sharedBridge] disconnectRobots];
+    }
 }
 
 @end

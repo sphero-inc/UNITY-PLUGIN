@@ -9,31 +9,30 @@
 #import <Foundation/Foundation.h>
 
 extern "C" {
-    typedef struct RKUNData {
-        float pitch;
-        float roll;
-        float yaw;
-        float x;
-        float y;
-        float z;
-    } RKUNData;
+    typedef void (*ReceiveDeviceMessageCallback)(const char *);
 }
 
 
 @interface RKUNBridge : NSObject {
+    BOOL robotInitialized;
     BOOL robotOnline;
-    BOOL dataStreamingOn;
-    RKUNData lastData;
+    BOOL controllerStreamingOn;
 }
 
-@property (atomic) RKUNData lastData;
+@property  ReceiveDeviceMessageCallback receiveDeviceMessageCallback;
 
 +(RKUNBridge*)sharedBridge;
 
 -(void)connectToRobot;
 -(BOOL)isRobotOnline;
 
--(void)enableDataStreaming;
--(void)disableDataStreaming;
+- (void)setDataStreamingWithSampleRateDivisor:(uint16_t)divisor
+                                 packetFrames:(uint16_t)frames
+                                   sensorMask:(uint64_t)mask
+                                  packetCount:(uint8_t)count;
+-(void)enableControllerStreamingWithSampleRateDivisor:(uint16_t)divisor
+                                         packetFrames:(uint16_t)frames
+                                           sensorMask:(uint64_t)mask;
+-(void)disableCotrollerStreaming;
 
 @end
