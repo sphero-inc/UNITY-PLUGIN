@@ -39,29 +39,28 @@ public class SpheroProviderIOS : SpheroProvider {
 		}
 	}
 	
-	/*
-	 * Call to properly disconnect Spheros.  Call in OnApplicationPause 
-	 */
 	override public void DisconnectSpheros() {
 		disconnectRobots();
-		foreach( Sphero sphero in m_PairedSpheros) {
-			sphero.ConnectionState = Sphero.Connection_State.Disconnected;
-		}
+		m_PairedSpheros[0].ConnectionState = Sphero.Connection_State.Disconnected;
 	}
 	
-	/* Connect to a robot at index */
 	override public void Connect(int index) {
 		// Don't try to connect to multiple Spheros at once
 		setupRobotConnection();
 	}	
 	
-	/*
-	 * Get a Sphero object from the unique Sphero id 
-	 * Returns nulls if no Spheros were found with that particular id
-	 */
 	override public Sphero GetSphero(string spheroId) {
 		if( m_PairedSpheros.Length > 0 ) return m_PairedSpheros[0];
 		return null; 
+	}
+	
+	override public Sphero[] GetConnectedSpheros() {		
+		if( m_PairedSpheros[0].ConnectionState == Sphero.Connection_State.Connected ) {
+			Sphero[] connectedSpheros = new Sphero[1];
+			connectedSpheros[0] = m_PairedSpheros[0];
+			return connectedSpheros;
+		}
+		return new Sphero[0];
 	}
 	
 	/* Need to call this to get the robot objects that are paired from Android */

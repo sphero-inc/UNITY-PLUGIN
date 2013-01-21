@@ -49,6 +49,9 @@ public class SpheroProviderAndroid : SpheroProvider {
 	
 	override public void DisconnectSpheros() {
 		m_RobotProvider.Call("disconnectControlledRobots");	
+		foreach( Sphero sphero in m_PairedSpheros ) {
+			sphero.ConnectionState = Sphero.Connection_State.Disconnected;	
+		}
 	}
 	
 	override public void FindRobots() {

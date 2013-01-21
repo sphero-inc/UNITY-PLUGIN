@@ -255,7 +255,7 @@ public class SpheroConnectionView : MonoBehaviour {
 		int connectBtnY = Screen.height-m_ViewPadding-m_ButtonHeight;
 		
 		// Check if Spheros are connected (only on multiple Sphero mode)
-		if( m_MultipleSpheros && m_SpheroProvider.GetConnectedSpheros().Count == 0 ) {
+		if( m_MultipleSpheros && m_SpheroProvider.GetConnectedSpheros().Length == 0 ) {
 			GUI.enabled = false;
 		}
 		// Draw Button at the bottom

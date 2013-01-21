@@ -8,7 +8,7 @@ public class HelloWorld : MonoBehaviour {
 	Color BLACK = new Color(0,0,0,1.0f);
 	
 	/* Connected Sphero Robot */
-	List<Sphero> m_SpheroList;
+	Sphero[] m_Spheros;
 	
 	/* Counter to determine if Sphero should have color or not */
 	int m_BlinkCounter;
@@ -16,9 +16,9 @@ public class HelloWorld : MonoBehaviour {
 	/* Use this for initialization */
 	void ViewSetup() {
 		// Get Connected Sphero
-		m_SpheroList = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
+		m_Spheros = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
 		SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
-		if( m_SpheroList.Count == 0 ) Application.LoadLevel("SpheroConnectionScene");
+		if( m_Spheros.Length == 0 ) Application.LoadLevel("SpheroConnectionScene");
 	}
 	
 	void Start () {	
@@ -41,7 +41,7 @@ public class HelloWorld : MonoBehaviour {
 	void Update () {
 		m_BlinkCounter++;
 		if( m_BlinkCounter % 20 == 0 ) {			
-			foreach( Sphero sphero in m_SpheroList ) {
+			foreach( Sphero sphero in m_Spheros ) {
 				// Set the Sphero color to blue 
 				if( sphero.RGBLEDColor.Equals(BLACK) ) {
 					sphero.SetRGBLED(BLUE.r,BLUE.g,BLUE.b);
@@ -59,8 +59,9 @@ public class HelloWorld : MonoBehaviour {
 	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
 	{
 		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
+		Sphero notifiedSphero = SpheroProvider.GetSharedProvider().GetSphero(message.RobotID);
 		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
-			m_SpheroList[0].ConnectionState = Sphero.Connection_State.Disconnected;
+			notifiedSphero.ConnectionState = Sphero.Connection_State.Disconnected;
 			Application.LoadLevel("NoSpheroConnectedScene");
 		}
 	}

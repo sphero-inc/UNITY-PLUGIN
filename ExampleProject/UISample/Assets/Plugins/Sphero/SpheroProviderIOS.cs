@@ -54,8 +54,13 @@ public class SpheroProviderIOS : SpheroProvider {
 		return null; 
 	}
 	
-	override public Sphero[] GetConnectedSpheros() {	
-		return m_PairedSpheros;
+	override public Sphero[] GetConnectedSpheros() {		
+		if( m_PairedSpheros[0].ConnectionState == Sphero.Connection_State.Connected ) {
+			Sphero[] connectedSpheros = new Sphero[1];
+			connectedSpheros[0] = m_PairedSpheros[0];
+			return connectedSpheros;
+		}
+		return new Sphero[0];
 	}
 	
 	/* Need to call this to get the robot objects that are paired from Android */

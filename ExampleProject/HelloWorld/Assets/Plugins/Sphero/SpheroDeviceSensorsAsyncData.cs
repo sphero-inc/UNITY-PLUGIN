@@ -17,6 +17,7 @@ public class SpheroDeviceSensorsAsyncData : SpheroDeviceAsyncMessage
 		frameCount = decoder.DecodeInt32("frameCount");
 		mask = decoder.DecodeUInt64("mask");
 		
+		
 		// Decode the frames array and create the frames array converting the 
 		// type of each object
 		Object[] decodedArray = (Object[])decoder.DecodeObject("dataFrames");

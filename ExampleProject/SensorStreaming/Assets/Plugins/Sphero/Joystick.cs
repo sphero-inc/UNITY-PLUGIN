@@ -1,61 +1,79 @@
 using UnityEngine;
 using System.Collections;
 
-//Gui joystick overlay built specifically for Spherov2
-
 public class Joystick : MonoBehaviour {
 	
 	struct Boundary {
 		public Vector2 min;
 		public Vector2 max;
 	};
-	
-	public Vector2 deadZone = Vector2.zero;
-	public bool normalize = false;
-	public Vector2 position;
-	
-	public GameObject positionJoystick; //3D joystick to position the gui joystick over
-	public Camera mainCamera; //The main camera to get the 3D joystick rendering position from
 
-	private int lastFingerId = -1;								// Finger last used for this joystick
-	private Vector2 fingerDownPos;
-	private float fingerDownTime;
-	private float firstDeltaTime = 0.5f;
+	private int lastFingerId = -1;						// Finger last used for this joystick
+	private bool firstTouch = true;
 
-	private GUITexture gui;								// Joystick graphic
-	private Rect defaultRect;								// Default position / extents of the joystick graphic
-	private Boundary guiBoundary;			// Boundary for joystick graphic
+	public float velocityScale = 0.6f;					// The Max velocity the joystick can make Sphero go
+	public GUITexture puck;								// Joystick puck graphic
+	public GUITexture background;						// Joystick background graphic
+	public float joystickScale;
+	private Rect defaultRect;							// Default position / extents of the joystick graphic
+	private Rect defaultBackRect;						// Default Background Rect
+	private Boundary guiBoundary;						// Boundary for joystick graphic
 	private Vector2 guiTouchOffset;						// Offset to apply to touch input
 	private Vector2 guiCenter;							// Center of joystick
 
-	private float velocityScale = 0.6f;
-	private bool stopped = true;
-	private float lastHeading = 0.0f;
+	private bool stopped = true;						// Whether Sphero is stopped or not
+	private float lastHeading = 0.0f;					// The last heading Sphero traveled in
+	private Vector2 startScreenSize;					// The size of the screen on start
+	private Vector3 originalTransformPos;				// The original transform position
+	
+	/* List of connected Spheros */
+	Sphero[] m_Spheros;
 	
 	// Use this for initialization
 	void Start () {
-		// Cache this component at startup instßead of looking up every frame	
-		gui = GetComponent<GUITexture>();
 		
+		m_Spheros = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
 		
-		var joyPos = mainCamera.WorldToViewportPoint(positionJoystick.transform.position);
-		Rect newRect = new Rect();
-		newRect.width = Screen.width * 0.5f;
-		newRect.height = Screen.width * 0.5f;
-		newRect.x = joyPos.x * Screen.width - (newRect.width * 0.5f);
-		newRect.y = joyPos.y * Screen.height - (newRect.height * 0.5f);
-		gui.pixelInset = newRect;
+		startScreenSize = new Vector2(Screen.width,Screen.height);
+		originalTransformPos = transform.position;
+		SetJoystickSize();
+	}
+	
+	void Disable()
+	{
+		gameObject.active = false;
+	}
+	
+	void ResetJoystick()
+	{
+		// Release the finger control and set the joystick back to the default position
+		puck.pixelInset = defaultRect;
+		background.pixelInset = defaultBackRect;
+		lastFingerId = -1;
+	}
+	
+	void SetJoystickSize() {
+		transform.position = originalTransformPos;
+		// Make the joystick scale a certain (joystickScale)% of the limiting dimension
+		float limitingScaledDimension = Mathf.Min(Screen.width,Screen.height)*joystickScale;
+		float puckScale = 0.32f;
+		
+		Rect backgroundRect = new Rect(-limitingScaledDimension*0.5f, -limitingScaledDimension*0.5f,
+									   limitingScaledDimension, limitingScaledDimension);
+		background.pixelInset = backgroundRect;
+		Rect puckRect = new Rect(-limitingScaledDimension*0.5f*puckScale, -limitingScaledDimension*0.5f*puckScale,
+								 limitingScaledDimension*puckScale, limitingScaledDimension*puckScale);
+		puck.pixelInset = puckRect;
 		
 		// Store the default rect for the gui, so we can snap back to it
-		defaultRect = gui.pixelInset;	
-		
+		defaultRect = puck.pixelInset;	
 		defaultRect.x += transform.position.x * Screen.width;
 		defaultRect.y += transform.position.y * Screen.height;
 		
-		//this.transform.position.x = 0.0f;
-		//this.transform.position.y = 0.0f;
+		defaultBackRect = background.pixelInset;
+		defaultBackRect.x += transform.position.x * Screen.width;
+		defaultBackRect.y += transform.position.y * Screen.height;
 		transform.position = new Vector3(0.0f, 0.0f, 0.0f);
-		
 					
 		// This is an offset for touch input to match with the top left
 		// corner of the GUI
@@ -67,25 +85,10 @@ public class Joystick : MonoBehaviour {
 		guiCenter.y = defaultRect.y + guiTouchOffset.y;
 		
 		// Let's build the GUI boundary, so we can clamp joystick movement
-		guiBoundary.min.x = defaultRect.x - guiTouchOffset.x;
-		guiBoundary.max.x = defaultRect.x + guiTouchOffset.x;
-		guiBoundary.min.y = defaultRect.y - guiTouchOffset.y;
-		guiBoundary.max.y = defaultRect.y + guiTouchOffset.y;
-	}
-	
-	void Disable()
-	{
-		gameObject.active = false;
-	}
-	
-	void ResetJoystick()
-	{
-		// Release the finger control and set the joystick back to the default position
-		gui.pixelInset = defaultRect;
-		lastFingerId = -1;
-		position = Vector2.zero;
-		fingerDownPos = Vector2.zero;
-			
+		guiBoundary.min.x = defaultBackRect.x;
+		guiBoundary.max.x = defaultBackRect.x + defaultBackRect.width;
+		guiBoundary.min.y = defaultBackRect.y;
+		guiBoundary.max.y = defaultBackRect.y + defaultBackRect.height;
 	}
 	
 	bool IsFingerDown()
@@ -102,22 +105,37 @@ public class Joystick : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		reAnchorJoystick();
+		
+		// Check for screen size changes
+		if( Screen.width != startScreenSize.x || Screen.height != startScreenSize.y ) {
+			SetJoystickSize();
+			startScreenSize = new Vector2(Screen.width,Screen.height);
+		}
 			
 		int count = Input.touchCount;
+		float headingRad = 0;
+		float touchRadius = 0;
+		float radius = (guiBoundary.max.y - guiBoundary.min.y)*0.5f;
 		
-		
-		if ( count == 0 )
+		if ( count == 0 ) {
+			if(stopped == false) {
+				stopped = true;
+				foreach( Sphero sphero in m_Spheros ) {
+					sphero.Roll((int)lastHeading,0.0f);	
+				}
+			}
+			firstTouch = true;
 			ResetJoystick();
+		}
 		else
 		{
 			for(int i =0; i < count; i++)
 			{
-				Touch touch = Input.GetTouch(i);			
+				Touch touch = Input.GetTouch(i);	
 				Vector2 guiTouchPos = touch.position - guiTouchOffset;
 		
 				bool shouldLatchFinger = false;
-				if ( gui.HitTest( touch.position ) )
+				if ( puck.HitTest( touch.position ) && firstTouch )
 				{
 					shouldLatchFinger = true;
 				}		
@@ -130,110 +148,50 @@ public class Joystick : MonoBehaviour {
 		
 				if ( lastFingerId == touch.fingerId )
 				{	
-								
 					// Change the location of the joystick graphic to match where the touch is
-					Vector2 clampedPosition;
-					clampedPosition.x =  Mathf.Clamp( guiTouchPos.x/* - (gui.pixelInset.width * 0.25f)*/, guiBoundary.min.x, guiBoundary.max.x );
-					clampedPosition.y =  Mathf.Clamp( guiTouchPos.y/* - (gui.pixelInset.height * 0.25f)*/, guiBoundary.min.y, guiBoundary.max.y );
-
-					gui.pixelInset = new Rect(clampedPosition.x, clampedPosition.y, gui.pixelInset.width, gui.pixelInset.height);
+					Vector2 clampedPosition = touch.position - guiTouchOffset;
+					
+					headingRad = Mathf.Atan2(touch.position.y-guiCenter.y, touch.position.x-guiCenter.x);
+					touchRadius = (touch.position-guiCenter).magnitude;
+					
+					// Clamp circular boundaries	
+					if( (touch.position-guiCenter).magnitude > radius ) {
+						Vector2 offset = new Vector2(radius*Mathf.Cos(headingRad),radius*Mathf.Sin(headingRad));
+						clampedPosition = guiCenter+offset-guiTouchOffset; 
+					}
+						
+					puck.pixelInset = new Rect(clampedPosition.x, clampedPosition.y, puck.pixelInset.width, puck.pixelInset.height);
+					
+					// Convert to Sphero heading
+					headingRad = (headingRad + Mathf.PI*2.0f) % (Mathf.PI*2.0f);
+					headingRad -= Mathf.PI * 0.5f;
+					if( headingRad < 0 ) headingRad += Mathf.PI*2.0f;
+					float degrees = 360 - (Mathf.Rad2Deg * headingRad);
+				
+					float velocity = touchRadius / radius;
+					#if !UNITY_EDITOR
+						velocity = velocity * velocityScale;
+						if(velocity > velocityScale) {
+							velocity = velocityScale;
+						}
+						if(velocity > 0.0f) {
+							Debug.Log("Vel="+velocity);						
+							foreach( Sphero sphero in m_Spheros ) {
+								sphero.Roll((int)degrees,velocity);	
+							}
+							stopped = false;
+							lastHeading = degrees;
+						}
+					#endif
 					
 					if ( touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled )
 						ResetJoystick();					
-				}			
+				}	
+				
+				firstTouch = false;
 			}
 		}
 		
-
-		// Get a value between -1 and 1 based on the joystick graphic location
-		position.x = ( gui.pixelInset.x + guiTouchOffset.x - guiCenter.x ) / guiTouchOffset.x;
-		position.y = ( gui.pixelInset.y + guiTouchOffset.y - guiCenter.y ) / guiTouchOffset.y;
-
-		// Adjust for dead zone	
-		var absoluteX = Mathf.Abs( position.x );
-		var absoluteY = Mathf.Abs( position.y );
 		
-		if ( absoluteX < deadZone.x )
-		{
-			// Report the joystick as being at the center if it is within the dead zone
-			position.x = 0;
-		}
-		else if ( normalize )
-		{
-			// Rescale the output after taking the dead zone into account
-			position.x = Mathf.Sign( position.x ) * ( absoluteX - deadZone.x ) / ( 1 - deadZone.x );
-		}
-			
-		if ( absoluteY < deadZone.y )
-		{
-			// Report the joystick as being at the center if it is within the dead zone
-			position.y = 0;
-		}
-		else if ( normalize )
-		{
-			// Rescale the output after taking the dead zone into account
-			position.y = Mathf.Sign( position.y ) * ( absoluteY - deadZone.y ) / ( 1 - deadZone.y );
-		}
-		
-		Vector2 inputVector = position;
-		float heading = Mathf.Atan2(inputVector.y, 0.0f - inputVector.x);
-		float velocity = inputVector.magnitude;
-		
-		//Commented out for weird Sphero v2 calibration
-		heading -= Mathf.PI / 2.0f;
-		if ( heading < 0.0f )
-		{
-			heading += 2.0f * Mathf.PI;
-		}
-		
-		float degrees = Mathf.Rad2Deg * heading;
-		
-		//Include the heading offset for auto-heading adjust
-		/*var headingDiff : float = RKUNBridge.s_calibrateGyroOffset - Input.gyro.attitude.eulerAngles.z;
-		degrees += headingDiff + RKUNBridge.s_calibrateOffset;*/
-		
-		while(degrees < 0.0f) {
-			degrees += 360.0f;
-		}
-		while(degrees > 359.0f) {
-			degrees -= 360.0f;
-		}
-		
-	#if !UNITY_EDITOR
-		velocity = velocity * velocityScale;
-		if(velocity > velocityScale) {
-			velocity = velocityScale;
-		}
-		if(velocity > 0.0f) {
-			//SpheroBridge.Roll((int)degrees, velocity);
-			stopped = false;
-			lastHeading = degrees;
-		} else if(velocity == 0.0f && stopped == false) {
-			stopped = true;
-			//SpheroBridge.Roll((int)lastHeading, 0.0f);
-		}
-	#endif
-		
-	}
-	
-	private void reAnchorJoystick()
-	{
-		// TODO: doesn't need to be done every frame, just when the screen bounds change
-		var joyPos = mainCamera.WorldToViewportPoint(positionJoystick.transform.position);
-		//print( String.Format("Joystick position {0:F2} {1:F2} {2:F2}", joyPos.x, joyPos.y, joyPos.z) );
-		Rect newRect = new Rect();
-		newRect.width = gui.pixelInset.width;
-		newRect.height = gui.pixelInset.height;
-		newRect.x = joyPos.x * Screen.width - (gui.pixelInset.width * 0.5f);
-		newRect.y = joyPos.y * Screen.height - (gui.pixelInset.height * 0.5f);
-		gui.pixelInset = newRect;
-		defaultRect.x = gui.pixelInset.x;
-		defaultRect.y = gui.pixelInset.y;
-		guiCenter.x = defaultRect.x + guiTouchOffset.x;
-		guiCenter.y = defaultRect.y + guiTouchOffset.y;
-		guiBoundary.min.x = defaultRect.x - guiTouchOffset.x;
-		guiBoundary.max.x = defaultRect.x + guiTouchOffset.x;
-		guiBoundary.min.y = defaultRect.y - guiTouchOffset.y;
-		guiBoundary.max.y = defaultRect.y + guiTouchOffset.y;
 	}
 }

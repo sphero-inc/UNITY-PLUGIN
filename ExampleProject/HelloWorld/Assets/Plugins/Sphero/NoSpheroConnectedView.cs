@@ -16,13 +16,14 @@ public class NoSpheroConnectedView : MonoBehaviour {
 	public Texture2D m_GetASpheroTexture;
 	public Texture2D m_ConnectTexture;
 	float m_BackgroundAspectRatio;
+	
 	// Loading image
 	public Texture2D m_Spinner;
-	public Vector2 m_SpinnerSize = new Vector2(128, 128);
-	public float m_SpinnerAngle = 0;
-	Vector2 m_SpinnerPosition = new Vector2(0, 0);
-	Vector2 m_SpinnerPivotPos = new Vector2(0, 0);
-	Rect m_SpinnerRect;
+	private Vector2 m_SpinnerSize = new Vector2(128, 128);
+	private float m_SpinnerAngle = 0;
+	private Vector2 m_SpinnerPosition = new Vector2(0, 0);
+	private Vector2 m_SpinnerPivotPos = new Vector2(0, 0);
+	private Rect m_SpinnerRect;
 	
 	// UI Padding Variables
 	int m_ViewPadding = 20;

@@ -53,19 +53,8 @@ public abstract class SpheroProvider {
 		return robotNames;
 	}
 	
-	/*
-	 * Get the robots that are currently connected
-	 */  
-	public List<Sphero> GetConnectedSpheros() {
-		List<Sphero> connectedSpheros = new List<Sphero>();
-		foreach( Sphero sphero in m_PairedSpheros ) {
-			if( sphero.ConnectionState == Sphero.Connection_State.Connected ) {
-				connectedSpheros.Add(sphero);	
-			}
-		}	
-		return connectedSpheros;
-	}
-	
+	/* Get an array of Connected Spheros */
+	abstract public Sphero[] GetConnectedSpheros();
 	/*
 	 * Call to properly disconnect Spheros.  Call in OnApplicationPause 
 	 */

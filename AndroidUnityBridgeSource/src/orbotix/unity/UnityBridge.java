@@ -196,20 +196,8 @@ public class UnityBridge {
 	                    	dataStreamingProfile.resetPacketCounter();
 	                    }
 	                }
-	                
-	                int ctr = dataStreamingProfile.getPacketCounter();
 	                UnityBridge.sharedBridge().sendMessage(DeviceMessageEncoder.encodeMessage(data).toString());
             	}
-            	
-            	// Call Encoder!
-                //get the frames in the response
-//                List<DeviceSensorsData> data_list = ((DeviceSensorsAsyncData)data).getAsyncData();
-//                if(data_list != null){
-//                    //Iterate over each frame
-//                    for(DeviceSensorsData datum : data_list){
-//
-//                    }
-//                }
             }
         }
     };

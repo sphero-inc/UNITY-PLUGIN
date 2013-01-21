@@ -75,4 +75,20 @@ public abstract class Sphero {
 	 * Disable controller data streaming
 	 */
 	abstract public void DisableControllerStreaming();
+	/* 
+	 * Roll Sphero in a direction at a certain speed 
+	 * @param angle (in degrees 0-359) of the roll direction (0 is y-axis, 90 is x-axis)
+	 * @param speed 0.0f is stopped, 1.0f is full speed
+	 */
+	abstract public void Roll(int heading, float speed);
+	/* 
+	 * Set the current heading of Sphero to the heading in the parameter
+	 * @parma new heading to set to the current heading of Sphero
+	 */
+	abstract public void SetHeading(int heading);
+	/*
+	 * Set the blue back LED on Sphero to a brightness intensity
+	 * @param intensity is the brightness of the back LED
+	 */
+	abstract public void SetBackLED(float intensity);
 }

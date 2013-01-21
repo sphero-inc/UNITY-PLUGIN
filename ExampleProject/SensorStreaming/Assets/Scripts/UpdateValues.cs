@@ -24,7 +24,7 @@ public class UpdateValues: MonoBehaviour {
 		// Get Connected Sphero
 		SpheroDeviceMessenger.SharedInstance.NotificationReceived +=
 			 ReceiveNotificationMessage;
-		if( SpheroProvider.GetSharedProvider().GetConnectedSpheros().Count == 0 )
+		if( SpheroProvider.GetSharedProvider().GetConnectedSpheros().Length == 0 )
 			Application.LoadLevel("SpheroConnectionScene");
 	}
 
@@ -36,12 +36,12 @@ public class UpdateValues: MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if (!streaming && 
-			SpheroProvider.GetSharedProvider().GetConnectedSpheros().Count  > 0) 
+			SpheroProvider.GetSharedProvider().GetConnectedSpheros().Length  > 0) 
 		{
 			SpheroDeviceMessenger.SharedInstance.AsyncDataReceived += ReceiveAsyncMessage;	
-			List<Sphero> spheroList =
+			Sphero[] spheros =
 				SpheroProvider.GetSharedProvider().GetConnectedSpheros();
-			m_Sphero = spheroList[0];
+			m_Sphero = spheros[0];
 			m_Sphero.EnableControllerStreaming(20, 1,
 				SpheroDataStreamingMask.AccelerometerFilteredAll |
 				SpheroDataStreamingMask.QuaternionAll |
@@ -116,8 +116,9 @@ public class UpdateValues: MonoBehaviour {
 	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
 	{
 		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
+		Sphero notifiedSphero = SpheroProvider.GetSharedProvider().GetSphero(message.RobotID);
 		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
-			m_Sphero.ConnectionState = Sphero.Connection_State.Disconnected;
+			notifiedSphero.ConnectionState = Sphero.Connection_State.Disconnected;
 			Application.LoadLevel("NoSpheroConnectedScene");
 		}
 	}

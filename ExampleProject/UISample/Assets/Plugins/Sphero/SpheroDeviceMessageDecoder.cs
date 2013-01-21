@@ -42,7 +42,6 @@ public class SpheroDeviceMessageDecoder {
 		if (value is Array) {
 			// need to decode the objects in the array
 			Dictionary<string,object>[] encodedArray = (Dictionary<string,object>[])value;
-			UnityEngine.Debug.Log(encodedArray.Length);
 			Object[] decodedArray = new Object[encodedArray.Length];
 			int index = 0;
 			foreach(Dictionary<string,object> encodedDictionary in encodedArray)
@@ -79,12 +78,16 @@ public class SpheroDeviceMessageDecoder {
 	
 	public ushort DecodeUInt16(string key)
 	{
-		return Convert.ToUInt16(DecodeObject(key));
+		// To be compatible with Java unsigned numbers are transmitted as hex strings
+		string hexString = DecodeString(key);
+		return Convert.ToUInt16(hexString, 16);
 	}
 	
 	public ulong DecodeUInt64(string key)
 	{
-		return Convert.ToUInt64(DecodeObject(key));
+		// To be compatible with Java unsigned numbers are transmitted as hex strings
+		string hexString = DecodeString(key);
+		return Convert.ToUInt64(hexString, 16);
 	}
 	
 	public float DecodeFloat(string key)

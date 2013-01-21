@@ -33,8 +33,8 @@ public class SpheroAccelerometerData : SpheroSensorData
 		normalized.X = decoder.DecodeFloat("normalized.x");
 		normalized.Y = decoder.DecodeFloat("normalized.y");
 		normalized.Z = decoder.DecodeFloat("normalized.z");
-		raw.x = decoder.DecodeUInt16("accelerationRaw.x");
-		raw.y = decoder.DecodeUInt16("accelerationRaw.y");
-		raw.z = decoder.DecodeUInt16("accelerationRaw.z");
+		raw.x = decoder.DecodeInt32("accelerationRaw.x");
+		raw.y = decoder.DecodeInt32("accelerationRaw.y");
+		raw.z = decoder.DecodeInt32("accelerationRaw.z");
 	}
 }

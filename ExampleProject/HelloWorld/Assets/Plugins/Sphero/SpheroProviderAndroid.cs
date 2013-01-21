@@ -47,14 +47,13 @@ public class SpheroProviderAndroid : SpheroProvider {
 		}
 	}
 	
-	/*
-	 * Call to properly disconnect Spheros.  Call in OnApplicationPause 
-	 */
 	override public void DisconnectSpheros() {
 		m_RobotProvider.Call("disconnectControlledRobots");	
+		foreach( Sphero sphero in m_PairedSpheros ) {
+			sphero.ConnectionState = Sphero.Connection_State.Disconnected;	
+		}
 	}
 	
-	/* Need to call this to get the robot objects that are paired from Android */
 	override public void FindRobots() {
 		// Only run this stuff if the adapter is enabled
 		if( IsAdapterEnabled() ) {
@@ -74,12 +73,10 @@ public class SpheroProviderAndroid : SpheroProvider {
 		}	
 	}
 	
-	/* Check if bluetooth is on */
 	override public bool IsAdapterEnabled() {
 		return m_RobotProvider.Call<bool>("isAdapterEnabled"); 		
 	}
 	
-	/* Connect to a robot at index */
 	override public void Connect(int index) {
 		// Don't try to connect to multiple Spheros at once
 		if( GetConnectingSphero() != null ) return;
@@ -89,10 +86,6 @@ public class SpheroProviderAndroid : SpheroProvider {
 		m_PairedSpheros[index].ConnectionState = Sphero.Connection_State.Connecting;
 	}	
 	
-	/*
-	 * Get a Sphero object from the unique Sphero id 
-	 * Returns nulls if no Spheros were found with that particular id
-	 */
 	override public Sphero GetSphero(string spheroId) {
 		foreach( Sphero sphero in m_PairedSpheros ) {
 			if( sphero.DeviceInfo.UniqueId.Equals(spheroId)) {
@@ -100,6 +93,24 @@ public class SpheroProviderAndroid : SpheroProvider {
 			}
 		}
 		return null; 
+	}
+	
+	override public Sphero[] GetConnectedSpheros() {
+		List<Sphero> connectedSpheros = new List<Sphero>();
+		// Create a list of connected Spheros
+		foreach( Sphero sphero in m_PairedSpheros ) {
+			if( sphero.ConnectionState == Sphero.Connection_State.Connected ) {
+				connectedSpheros.Add(sphero);	
+			}
+		}	
+		// Create and fill an array of connected spheros
+		Sphero[] spheroArray = new Sphero[connectedSpheros.Count];
+		int i = 0;
+		foreach( Sphero sphero in connectedSpheros ) {
+			spheroArray[i] = sphero;
+			i++;
+		}
+		return spheroArray;
 	}
 }
 
