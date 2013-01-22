@@ -27,11 +27,6 @@ public class UnityBridge {
      * Singleton UnityBridge instance
      */
     private static UnityBridge sharedBridge = new UnityBridge();
-    
-    /**
-     * Holds the profile for updating data streaming for multiple robots
-     */
-    private HashMap<Robot, RobotDataStreamingProfile> mRobotDataStreamingProfiles = new HashMap<Robot, RobotDataStreamingProfile>();
 	
 	static {
 		System.loadLibrary("unity_bridge");
@@ -125,15 +120,14 @@ public class UnityBridge {
 	 */
 	public void setDataStreaming(Robot robot, int divisor, int packetFrames, long sensorMask, int packetCount) {
 		// Remove old profile
-		if( mRobotDataStreamingProfiles.containsKey(robot) ) {
-			mRobotDataStreamingProfiles.remove(robot);
+		if( sensorMask == SetDataStreamingCommand.DATA_STREAMING_MASK_OFF ) {
 			DeviceMessenger.getInstance().removeAsyncDataListener(robot, mDataListener);
 		}
-		// Add the robot to the profile
-		RobotDataStreamingProfile robotDataStreamingProfile = new RobotDataStreamingProfile(divisor, packetFrames, sensorMask, packetCount);
-		DeviceMessenger.getInstance().addAsyncDataListener(robot, mDataListener);
-		mRobotDataStreamingProfiles.put(robot, robotDataStreamingProfile);
-		SetDataStreamingCommand.sendCommand(robot, divisor, packetFrames, sensorMask, robotDataStreamingProfile.getPacketCount());
+		// Override current one
+		else {
+			DeviceMessenger.getInstance().addAsyncDataListener(robot, mDataListener);
+		}
+		SetDataStreamingCommand.sendCommand(robot, divisor, packetFrames, sensorMask, packetCount);
 	}
 	
 	/**
@@ -163,10 +157,7 @@ public class UnityBridge {
 
 		// Disable data streaming and delete profile
 		SetDataStreamingCommand.sendCommand(robot,0,0,0,0);
-		if( mRobotDataStreamingProfiles.containsKey(robot) ) {
-			mRobotDataStreamingProfiles.remove(robot);
-			DeviceMessenger.getInstance().removeAsyncDataListener(robot, mDataListener);
-		}
+		DeviceMessenger.getInstance().removeAsyncDataListener(robot, mDataListener);
 	}
 	
 	/**
@@ -175,99 +166,11 @@ public class UnityBridge {
     private DeviceMessenger.AsyncDataListener mDataListener = new DeviceMessenger.AsyncDataListener() {
         @Override
         public void onDataReceived(DeviceAsyncData data) {
-
-        	Robot robot = data.getRobot();
-        	
             if(data instanceof DeviceSensorsAsyncData){
-
-            	// Check if the robot has a profile first
-            	if( mRobotDataStreamingProfiles.containsKey(robot) ) {
-	            	RobotDataStreamingProfile dataStreamingProfile = mRobotDataStreamingProfiles.get(robot);
-	                // If we are getting close to packet limit, request more
-	                if( dataStreamingProfile.incramentPacketCounter() ) {
-	                	// Only request more if the packet counter is infinite
-	                    if( dataStreamingProfile.isInfinite() ) {
-	                    	SetDataStreamingCommand.sendCommand(robot, 
-	                    			dataStreamingProfile.getDivisor(), 
-	                    			dataStreamingProfile.getPacketFrames(), 
-	                    			dataStreamingProfile.getSensorMask(), 
-	                    			dataStreamingProfile.getPacketCount());
-	                    	
-	                    	dataStreamingProfile.resetPacketCounter();
-	                    }
-	                }
-	                UnityBridge.sharedBridge().sendMessage(DeviceMessageEncoder.encodeMessage(data).toString());
-            	}
+            	UnityBridge.sharedBridge().sendMessage(DeviceMessageEncoder.encodeMessage(data).toString());
             }
         }
     };
-    
-    /**
-     * Private inner class to keep track of each data streaming profile for multiple robots
-     */
-    private class RobotDataStreamingProfile {
-    	
-        /**
-         * Data Streaming Packet Counts
-         */
-        private final static int TOTAL_PACKET_COUNT = 200;
-        private final static int PACKET_COUNT_THRESHOLD = 50;
-    	
-        private int mPacketCounter;
-        private int mDivisor;
-        private int mPacketFrames;
-        private long mSensorMask;
-        private int mPacketCount;
-    	
-    	public RobotDataStreamingProfile(int divisor, int packetFrames, long sensorMask, int packetCount) {
-			mDivisor = divisor;
-			mPacketFrames = packetFrames;
-			mSensorMask = sensorMask;
-			mPacketCount = packetCount;
-		}
-    	
-    	/**
-    	 * Incraments the packet counter
-    	 * @return true if limit has been reached, false otherwise
-    	 */
-    	public boolean incramentPacketCounter() {
-    		if( ++mPacketCounter > (TOTAL_PACKET_COUNT-PACKET_COUNT_THRESHOLD) ) {
-    			return true;
-    		}
-    		return false;
-    	}
-    	
-    	/**
-    	 * Reset the packet counter after a new data streaming command is sent
-    	 */
-    	public void resetPacketCounter() {
-    		mPacketCounter = 0;
-    	}
-    	
-    	/**
-    	 * Check if code should continue requesting more data
-    	 * @return true if robot wants more data, false otherwise
-    	 */
-    	public boolean isInfinite() {
-    		return mPacketCount == 0;
-    	}
-    	
-    	/**
-    	 * Getters
-    	 */
-    	public int getPacketCounter() { return mPacketCounter; }
-    	public int getDivisor() { return mDivisor; }
-    	public int getPacketFrames() { return mPacketFrames; }
-    	public long getSensorMask() { return mSensorMask; }
-    	
-    	/**
-    	 * Get the Packet Count for this Robot
-    	 * @return the packetcounter or 200 for infinite streaming
-    	 */
-    	public int getPacketCount() { 
-    		return (mPacketCount==0)?TOTAL_PACKET_COUNT:mPacketCount; 
-    	}
-    }
     
     ///////////////////////////
     /// NDK Native Methods

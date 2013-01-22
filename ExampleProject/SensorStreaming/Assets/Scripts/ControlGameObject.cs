@@ -17,6 +17,8 @@ public class ControlGameObject : MonoBehaviour {
 		if (!observingDataStreaming) {
 			// Start handling streaming events once updates have been started.
 			SpheroDeviceMessenger.SharedInstance.AsyncDataReceived += ReceiveAsyncMessage;	
+			SpheroDeviceMessenger.SharedInstance.NotificationReceived +=
+			 ReceiveNotificationMessage;
 			observingDataStreaming = true;
 		}
 	}
@@ -25,6 +27,8 @@ public class ControlGameObject : MonoBehaviour {
 		if (pause) {
 			// Unregister event handler when application pauses.
 			SpheroDeviceMessenger.SharedInstance.AsyncDataReceived -= ReceiveAsyncMessage;
+			SpheroDeviceMessenger.SharedInstance.NotificationReceived -=
+			 ReceiveNotificationMessage;
 		} else {
 			// Re-initialize when the application resumes
 			observingDataStreaming = false;
@@ -40,6 +44,7 @@ public class ControlGameObject : MonoBehaviour {
 		// Event Handler function 
 		SpheroDeviceSensorsAsyncData message = 
 			(SpheroDeviceSensorsAsyncData)eventArgs.Message;
+		
 		SpheroDeviceSensorsData sensorsData = message.Frames[0];
 		
 		// Get the yaw value which is used to rotate the on screen Sphero
@@ -54,5 +59,18 @@ public class ControlGameObject : MonoBehaviour {
 		// filtering formula (alpha * filteredValue + (1 - alpha) * newValue)
 		position = new Vector3((0.9f * currentPosition.x + 0.1f * xAcceleration), 
 			(0.9f * currentPosition.y + 0.1f * yAcceleration), 0.0f);
+	}
+	
+	/*
+	 * Callback to receive connection notifications 
+	 */
+	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
+	{
+		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
+		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
+			SpheroDeviceMessenger.SharedInstance.AsyncDataReceived -= ReceiveAsyncMessage;
+			SpheroDeviceMessenger.SharedInstance.NotificationReceived -=
+			 ReceiveNotificationMessage;
+		}
 	}
 }

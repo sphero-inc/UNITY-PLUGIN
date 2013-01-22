@@ -76,9 +76,9 @@ public class UpdateValues: MonoBehaviour {
 		// Upate values
 		GUI.BeginGroup(new Rect(10, 10, 250, 400));
 		GUI.Box(new Rect(0,0,250, 400), "", boxStyle);
-		GUI.Label(new Rect(4,30,242,36), "accel x: " + acceleration.X, labelStyle);
-		GUI.Label(new Rect(4,66,242,36), "accel y: " + acceleration.Y, labelStyle);
-		GUI.Label(new Rect(4,102,242,36), "accel z: " + acceleration.Z, labelStyle);
+		GUI.Label(new Rect(4,30,400,36), "accel x: " + acceleration.X, labelStyle);
+		GUI.Label(new Rect(4,66,400,36), "accel y: " + acceleration.Y, labelStyle);
+		GUI.Label(new Rect(4,102,400,36), "accel z: " + acceleration.Z, labelStyle);
 		GUI.Label(new Rect(4,138,242,36), "pitch: " + pitch, labelStyle); 
 		GUI.Label(new Rect(4,174,242,36), "roll: " + roll, labelStyle);
 		GUI.Label(new Rect(4,210,242,36), "yaw: " + yaw, labelStyle);
@@ -119,8 +119,8 @@ public class UpdateValues: MonoBehaviour {
 		Sphero notifiedSphero = SpheroProvider.GetSharedProvider().GetSphero(message.RobotID);
 		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
 			notifiedSphero.ConnectionState = Sphero.Connection_State.Disconnected;
+			streaming = false;
 			Application.LoadLevel("NoSpheroConnectedScene");
 		}
 	}
-	
 }

@@ -34,7 +34,7 @@ public class Joystick : MonoBehaviour {
 		
 		m_Spheros = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
 		
-		startScreenSize = new Vector2(Screen.width,Screen.height);
+		startScreenSize = new Vector2(Camera.main.pixelRect.width,Camera.main.pixelRect.height);
 		originalTransformPos = transform.position;
 		SetJoystickSize();
 	}
@@ -55,7 +55,7 @@ public class Joystick : MonoBehaviour {
 	void SetJoystickSize() {
 		transform.position = originalTransformPos;
 		// Make the joystick scale a certain (joystickScale)% of the limiting dimension
-		float limitingScaledDimension = Mathf.Min(Screen.width,Screen.height)*joystickScale;
+		float limitingScaledDimension = Mathf.Min(startScreenSize.x,startScreenSize.y)*joystickScale;
 		float puckScale = 0.32f;
 		
 		Rect backgroundRect = new Rect(-limitingScaledDimension*0.5f, -limitingScaledDimension*0.5f,
@@ -67,12 +67,12 @@ public class Joystick : MonoBehaviour {
 		
 		// Store the default rect for the gui, so we can snap back to it
 		defaultRect = puck.pixelInset;	
-		defaultRect.x += transform.position.x * Screen.width;
-		defaultRect.y += transform.position.y * Screen.height;
+		defaultRect.x += transform.position.x * startScreenSize.x;
+		defaultRect.y += transform.position.y * startScreenSize.y;
 		
 		defaultBackRect = background.pixelInset;
-		defaultBackRect.x += transform.position.x * Screen.width;
-		defaultBackRect.y += transform.position.y * Screen.height;
+		defaultBackRect.x += transform.position.x * startScreenSize.x;
+		defaultBackRect.y += transform.position.y * startScreenSize.y;
 		transform.position = new Vector3(0.0f, 0.0f, 0.0f);
 					
 		// This is an offset for touch input to match with the top left
@@ -107,9 +107,9 @@ public class Joystick : MonoBehaviour {
 	void Update () {
 		
 		// Check for screen size changes
-		if( Screen.width != startScreenSize.x || Screen.height != startScreenSize.y ) {
+		if( startScreenSize.x != Camera.main.pixelRect.width || startScreenSize.y != Camera.main.pixelRect.height ) {
+			startScreenSize = new Vector2(Camera.main.pixelRect.width,Camera.main.pixelRect.height);
 			SetJoystickSize();
-			startScreenSize = new Vector2(Screen.width,Screen.height);
 		}
 			
 		int count = Input.touchCount;
@@ -174,8 +174,7 @@ public class Joystick : MonoBehaviour {
 						if(velocity > velocityScale) {
 							velocity = velocityScale;
 						}
-						if(velocity > 0.0f) {
-							Debug.Log("Vel="+velocity);						
+						if(velocity > 0.0f) {					
 							foreach( Sphero sphero in m_Spheros ) {
 								sphero.Roll((int)degrees,velocity);	
 							}
