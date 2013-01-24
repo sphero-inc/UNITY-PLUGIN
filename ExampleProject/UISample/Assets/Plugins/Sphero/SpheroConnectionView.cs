@@ -32,7 +32,6 @@ public class SpheroConnectionView : MonoBehaviour {
 	int m_ButtonHeight = 55;
 	
 	// Title Variables
-	int m_TitleWidth = 120;
 	int m_TitleHeight = 40;
 	string m_Title;
 	
@@ -45,10 +44,6 @@ public class SpheroConnectionView : MonoBehaviour {
 	SpheroProvider m_SpheroProvider;
 	// Paired Sphero Info
 	string[] m_RobotNames;
-	
-	// Custom ScrollView Variables
-	public GUISkin optionsSkin;
-    public GUIStyle rowSelectedStyle;
 	
     // Internal variables for managing touches and drags
 	private int selected = -1;

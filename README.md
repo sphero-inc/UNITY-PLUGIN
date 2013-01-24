@@ -17,52 +17,113 @@ This plugin is meant to be open source.  The underlying architecture is in place
  
 * [SensorStreaming](https://github.com/orbotix/Sphero-Unity-Plugin/tree/master/ExampleProject/SensorStreaming) - If you want to use the sensor data from Sphero (to control GameObjects on screen), you should check this sample out. 
 
-* [UISample](https://github.com/orbotix/Sphero-Unity-Plugin/tree/master/ExampleProject/RobotUISample) - The UISample is a great place to start for drive apps.  It already has elements for button calibration widget, and also has a joystick for driving Sphero.
+* [UISample](https://github.com/orbotix/Sphero-Unity-Plugin/tree/master/ExampleProject/RobotUISample) - The UISample is a great place to start for drive apps.  It already has elements for button calibration widget, and a joystick for driving Sphero.
 
 ## Overview
 
 ---
 
-The Sphero Unity Plugin is essentially a group of C# classes that form a bridge between Unity and our Native Android and iOS SDKs.  Unity can call down into each platform's native code for Sphero commands and even receive asynchronous data callbacks from native code up into Unity.  Standard SDK architecture hides implementation from the developer, and we tried to do just that with the Unity Plugin.  The developer should not have to change any code if they are deploying to Android or iOS.  
+The Sphero Unity Plugin is essentially a group of C# classes that form a bridge between Unity and our Native Android and iOS SDKs.  Unity can call down into each platform's native code for Sphero commands and receive asynchronous data callbacks from native code up into Unity.  The easiest way to get going with the plugin is by starting with on of the samples we have created. If you have an existing project you want to integrate Sphero into, please continue reading. 
 
-	Note: The Sphero Unity Plugin only works with Android and iOS
-
-## Adding to the Plugin
-
-With our Android and iOS SDK, we do not explain the inner mechanics of the code.  However, since we want this to be an open source project, we feel it is necessary to explain a bit what we have done.  For the most part being, there is a large shortage of tutorials on Unity Plugins.  
-
-Unity's project structure requires you to place any plugin code in the plugin directory.  The code inside here is compiled to be accessed from C#, javascript, or boo.  Therefore, even though we made our samples in C#, the Sphero Unity Plugin should work with any other Unity coding language.  Let's start with iOS, because this probably the easier plugin to explain.
-
-### iOS Plugin
-
-In the Plugin directory in the Unity Project Structure, there is another directory entitled "iOS".  Unity looks for this and knows to add it when you are deploying on an iPhone, iPad, or iPod Touch.  We place in here the Sphero iOS Native SDK and the ".mm" file (Objective-C that can also have C++ code) that bridges the gap.
-
-For this code, we mostly followed the guidelines on [Unity Plugin Manuel](http://docs.unity3d.com/Documentation/Manual/Plugins.html).  The process is to define extern "C" {} functions and calling them in Unity by defining them as such:
-
-
-	[DllImport ("__Internal")]
-	private static extern float FooPluginFunction ();
+	Notice: The Sphero Unity Plugin only works with Android and iOS	
 	
-This is all there is to it to calling from Unity down into Native iOS code.  So, to add additionaly Sphero commands, add functions into the RKUNBridge.mm file.
+## Adding Sphero to a New or Existing Project
 
-#### Calling C#/Javascript back from Native iOS Code
+Open up Unity and start by choosing File -> New Project. 
 
-The standard way to call up into Unity is by using UnitySendMessage.  However, after some thought and reflection, we decided against it.  For one, we believe it uses reflection to find the game object and method name to send the message to.  Which, in the case of data streaming, is too slow.  Also, we wanted the developer to be able to process the data at the rate it came in, and as far as we could tell UnitySendMessage only executes alongside the Update() method.
-  
-Therefore, we decided to use a function pointer to pass data from Native Code into Unity.  We used the MonoPInvokeCallback attribute to pass a C# function pointer from managed to unmanaged code.  You can read more about this [here](http://docs.go-mono.com/?link=T%3aMonoTouch.MonoPInvokeCallbackAttribute).  The C# code then gives a function pointer to the RKUNBRidge class.  It uses the pointer to make callbacks into C#.  
-
-Using this technique, we are able to send notifications, responses, and asynchronous data from native code back up into Unity as encoded strings.  Theses encoded strings then get decoded in the SpheroDeviceMessenger class, where they are distributed to the necessary Unity project classes using EventHandlers.
-
-### Android Plugin
-
-The Android plugin is more advanced, because it requires one to be familiar with the Android NDK and the JNI.  Luckily, Unity has made it easy to call into the JNI with the AndroidJavaObject and AndroidJavaClass objects.  You can learn more about how to use them from Unity's website [here](http://docs.unity3d.com/Documentation/Manual/PluginsForAndroid.html)
-
-#### Calling C#/Javascript back from Native Android Code
-
-Once again, the standard way to do this is with UnitySendMessage.  Thus, for the same reasons as above, we have decided to use MonoPInvokeCallback between C++ and C# code.  Hence, we are going to have to compile a shared library for native Android to communcate 
-
- 
- 
-### Sphero Connection View
+Next, drag the `Plugins` directory from `Sphero-Unity-Plugin` into the your Unity Project.  If Unity complains about RegisterDeviceCallback, make sure you are building for either iOS or Android.
 
 
+### The Sphero Connection Scenes
+
+We have created scripts for you that handle the connection lifecycle of a Sphero on iOS and Android. The first scene we need to create is the SpheroConnectionScene.  Most of the time, this is the scene that should pop up when you first start the app.  
+
+Start by choosing File -> New Scene, and save it as `SpheroConnectionScene`.  All you need to do is locate the SpheroConnectionView prefab that is in the `/Plugins/Resources/Prefabs` directory in your project.  Drag the prefab into the scene.  There are two fields in the inspector that are important to note.  First, the `Next Level` is a string of the name of the scene that you want Unity to load after the SpheroConnectionScene is done.  It will proceed to the scene after it connects to a Sphero when the `Multiple Spheros` check box is unchecked.  On Android, you have the abilitiy to connect to multiple Spheros, which you enable by checking the check box. On iOS, this scene goes immediately to the NoSpheroConnectedScene.
+
+Next, create another scene and save it as NoSpheroConnectedScene.  Drag the NoSpheroConnectedView prefab  from the same directory in your project into this scene.  This scene also has a `Next Level` field in the inspector, and it should be the same as the one in the SpheroConnectionScene.  The SpheroConnectionScene will load the NoSpheroConnectedScene if you are deploying on iOS.
+
+![nospheroconnected.png](https://github.com/orbotix/Sphero-Unity-Plugin/raw/master/assets/image01.png)
+
+This is what you should see on iOS.  The scene is trying to connect to a Sphero when this is running.  On Android, the searching progress is replaced by a connect button that takes the user to the SpheroConnectionScene.
+
+### Using Sphero Objects
+
+The previous scenes will handle Sphero connections.  After a Sphero is connected, your project has access to it through the `SpheroProvider` singleton class.  Access them by this call:
+
+C#
+
+	Sphero[] ConnectedSpheros = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
+	Sphero sphero = ConnectedSpheros[0];
+
+JavaScript
+
+	var connectedspheros = new Array();
+	var sphero : Sphero;
+	connectedspheros = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
+	sphero = connectedspheros[0];
+		
+This array will have a length of 0 if no Spheros are connected. And only ever be a length of 1 on iOS.  It is helpful to check for these conditions and respond in your app accordingly. 
+
+#### Disconnecting Sphero
+
+It is proper Sphero edicate to show down the robot properly.  This ensures that the robot will be left in a stable state when your app is not using it.  In our samples we encourage disconnecting the Spheros in the OnApplicationPause() method.  This gurentees the Spheros will be properly disconnect on both platforms.
+
+C#
+
+	void OnApplicationPause(bool pause) {
+		if( pause ) {
+			SpheroProvider.GetSharedProvider().DisconnectSpheros();
+		}
+	}
+
+JavaScript
+
+	function OnApplicationPause(paused : boolean) {
+		if(paused) {
+			SpheroProvider.GetSharedProvider().DisconnectSpheros();
+		}
+	}
+
+#### Commands
+
+Unlike our native SDKs, commands are sent to the ball through functions in the Sphero Class. All platform dependent code is hidden, so calls to these functions will operate fine on both mobile platforms.  
+
+**Changing Sphero's Color (C# and JavaScript):**
+
+	// Change Sphero color to red
+	sphero.SetRGBLED(1.0f, 0.0f, 0.0f);  
+**Driving Sphero (C# and JavaScript):**
+
+	// Drive Sphero down -y axis at full speed
+	sphero.Roll(180, 1.0f);  
+	
+There are more commands in the Sphero class. 
+
+#### Notifications, Asynchronous Messaging, and Responses
+
+The Sphero SDK sends notifications to Unity when a Sphero disconnects, connects, fails to connect, after every command, and when you are streaming data.  All these messages come into Unity through the `SpheroDeviceMessenger` class.  So, when you are concerned with any of these messages, you simply need to register a callback function with the SpheroDeviceMessenger.
+
+C#
+
+	SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
+	
+Remember to unregister for the notification when you no longer need it.
+
+C#
+
+	SpheroDeviceMessenger.SharedInstance.NotificationReceived -= Re	ceiveNotificationMessage;
+
+Receive the data and do what you want with it.  Every message has the unique robot id that the message pertains too and a timestamp.  In this instance, there is also a notification type.  The code snippet below sets the state of a Sphero object to disconnected when the disconnect notification message is received.
+
+C#
+
+	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
+	{
+		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
+		Sphero notifiedSphero = SpheroProvider.GetSharedProvider().GetSphero(message.RobotID);
+		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
+			notifiedSphero.ConnectionState = Sphero.Connection_State.Disconnected;
+		}
+	}
+
+For a walkthrough of the asynchronous message handling, see the SensorStreaming example.
