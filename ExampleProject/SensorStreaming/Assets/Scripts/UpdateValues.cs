@@ -38,10 +38,16 @@ public class UpdateValues: MonoBehaviour {
 		if (!streaming && 
 			SpheroProvider.GetSharedProvider().GetConnectedSpheros().Length  > 0) 
 		{
+			// Setup streaming for the first time once a Sphero is connected.
+			//// Register the event handler call back with the SpheroDeviceMessenger
 			SpheroDeviceMessenger.SharedInstance.AsyncDataReceived += ReceiveAsyncMessage;	
+			//// Get the currently connected Sphero
 			Sphero[] spheros =
 				SpheroProvider.GetSharedProvider().GetConnectedSpheros();
 			m_Sphero = spheros[0];
+			//// Enable data streaming for controller app. This method turns off stabilization (disables the wheel motors), 
+			//// turn on the back LED (negative x axis reference), and sets data streaming at 20 samples/sec (400/20), 
+			//// a single sample per packet sent, and turns on accelerometer, quaternion, and IMU (attitude) sampling.
 			m_Sphero.EnableControllerStreaming(20, 1,
 				SpheroDataStreamingMask.AccelerometerFilteredAll |
 				SpheroDataStreamingMask.QuaternionAll |
@@ -55,13 +61,17 @@ public class UpdateValues: MonoBehaviour {
 		if (pause) {
 			// Unregister event handlers when the applications pauses.
 			if (streaming) {
+				// removes data streaming event handler
 				SpheroDeviceMessenger.SharedInstance.AsyncDataReceived -= 
 					ReceiveAsyncMessage;	
+				// Turns off controller mode data streaming. Stabilization is restored and the back LED is turn off.
 				m_Sphero.DisableControllerStreaming();
 				streaming = false;
 			} 
+			// Stop listening for disconnnect notifications.
 			SpheroDeviceMessenger.SharedInstance.NotificationReceived -= 
 				ReceiveNotificationMessage;
+			// Disconnect from the Sphero
 			SpheroProvider.GetSharedProvider().DisconnectSpheros();
 		}else {
 			ViewSetup();
@@ -115,6 +125,8 @@ public class UpdateValues: MonoBehaviour {
 	 */
 	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
 	{
+		// Event handler that listens for disconnects. An example of when one would be received is when Sphero 
+		// goes to sleep.
 		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
 		Sphero notifiedSphero = SpheroProvider.GetSharedProvider().GetSphero(message.RobotID);
 		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {

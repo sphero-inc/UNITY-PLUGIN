@@ -1,71 +1,67 @@
-# HelloWorld Example
+# Streaming Example
 
 ---
-The HelloWorld example demonstrates how to properly manage a Sphero application lifecycle and send basic commands to the ball to change its color.
+The streaming example demonstrates how to enable data streaming for controller applications. The application displays the values returned for data, and a Sphero™ model is moved around the screen using the accelerometer's x and y values and is rotated using the attitude's yaw value. This sample code can be used as a basis for demonstrating how to control a game object in a game. 
 
 
-## Sphero Application Lifecycle
+## Data Streaming
+
+---
+The code that initiates data streaming is in UpdateValues.cs which is a MonoBehaviour that is attached to the Main Camera. This script displays the streamed data values too.
+
+In the Update method data streaming is initiated after a Sphero is connected. First an event handler callback is added to the SpheroDeviceMessenger singleton.
+			
+	SpheroDeviceMessenger.SharedInstance.AsyncDataReceived += ReceiveAsyncMessage;	
+The event handler needs to conform to the following delegate signature.
+
+	public delegate void MessengerEventHandler(object sender, MessengerEventArgs eventArgs);
+
+After registering the event handler, the connected Sphero object is retrieved from the SpheroProvider singleton. Then controller mode data streaming is enabled.
+
+	m_Sphero.EnableControllerStreaming(20, 1,
+			SpheroDataStreamingMask.AccelerometerFilteredAll |
+			SpheroDataStreamingMask.QuaternionAll |
+			SpheroDataStreamingMask.IMUAnglesFilteredAll);
+			
+Enabling controller streaming turns off stabilization. This turns off the control system, so it will not try to maintain the drive mechanism in a fix postion which will prevent the data from changing. Then, it turns on the blue back LED which provides you with a reference for the sensors' negative x axes. Finally, the data streaming command is sent with the sample rate at 20 samples per second (400/20), 1 sample per sent packet, and acceleromter, IMU (attitude), and Quaternion data turned on. 
+
+
+Streaming is disabled if the application pauses (is backgrounded) and streaming event handler is removed.
+
+	// removes data streaming event handler
+	SpheroDeviceMessenger.SharedInstance.AsyncDataReceived -= 
+			ReceiveAsyncMessage;	
+	// Turns off controller mode data streaming. Stabilization is 
+	// restored and the back LED is turn off.
+	m_Sphero.DisableControllerStreaming();
+
+## Moving a Game Object
 
 ---
 
-This subject is important, because you need to make sure Sphero is always in a stable state.  To accomplish this, you need to be properly shutting down everything you register for, including Sphero itself.  The code below shows the way to properly register/unregister notification delegates, show the `NoSpheroConnectionScene` and disconnect Sphero.
+The script ControlGameObject.cs is attached to the Sphero game object. This code registers an async data event handler with the SpheroDeviceMessenger singleton. As it receives data streaming messages it assigns yaw, x acceleration, and y acceleration to private members.
 
-	void ViewSetup() {
-		// Get Connected Sphero
-		m_Spheros = SpheroProvider.GetSharedProvider().GetConnectedSpheros();
-		SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
-		if( m_Spheros.Length == 0 ) Application.LoadLevel("SpheroConnectionScene");
-	}
-	
-	void Start () {	
-		ViewSetup();
-	}
-	
-	void OnApplicationPause(bool pause) {
-		if( pause ) {
-			// Initialize the device messenger which sets up the callback
-			SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
-			SpheroProvider.GetSharedProvider().DisconnectSpheros();
-		}
-		else {
-			ViewSetup();
-		}
-	}
-	
-The OnApplicationPause() method is called on Android and iOS when the user presses the home button.  At this point, the app should not be connected to any Spheros, so we call the SpheroProvider function to disconnect any connected Spheros.  This will properly disconnect them and automatically put them in a stable state. Also, if your app is only a Sphero app, it is wise to check if any Spheros are connected at the start, so you can then bring up the connection scene (especially if the user brings the app back up from the background).
-
-## Blinking Sphero Blue
-
-You can change the color of Sphero, along with accessing it's current color, by using the code below.  The color change only occurs at frequency of once every 20 Update() calls.
-
-		m_BlinkCounter++;
-		if( m_BlinkCounter % 20 == 0 ) {			
-			foreach( Sphero sphero in m_Spheros ) {
-				// Set the Sphero color to blue 
-				if( sphero.RGBLEDColor.Equals(BLACK) ) {
-					sphero.SetRGBLED(BLUE.r,BLUE.g,BLUE.b);
-				}
-				else {
-					sphero.SetRGBLED(BLACK.r,BLACK.g,BLACK.b);	
-				}
-			}
-		}
+		// Event Handler function 
+		SpheroDeviceSensorsAsyncData message = 
+			(SpheroDeviceSensorsAsyncData)eventArgs.Message;
 		
-The current color of the individual Sphero is set when the user calls the SetRGBLED() function.
+		SpheroDeviceSensorsData sensorsData = message.Frames[0];
 		
-## Dealing with Sphero Disconnects
+		// Get the yaw value which is used to rotate the on screen Sphero
+		yaw1 = sensorsData.AttitudeData.Yaw;
+		
+		// Update the on screen Sphero position using the accelerometer values for x and y
+		float xAcceleration = sensorsData.AccelerometerData.Normalized.X;
+		float yAcceleration = sensorsData.AccelerometerData.Normalized.Y;
+		Vector3 currentPosition = transform.position;
+		
+		// Create a new position by filtering the accelerometer data using the low pass
+		// filtering formula (alpha * filteredValue + (1 - alpha) * newValue)
+		position = new Vector3((0.9f * currentPosition.x + 0.1f * xAcceleration), 
+			(0.9f * currentPosition.y + 0.1f * yAcceleration), 0.0f);
 
-Sphero can disconnect for a few reasons.  A few instances are if the battery dies, it travels out of the bluetooth range, or the user places it in the charger.  If any of these occur, the Unity Plugin will send a notification to all registered classes notifying of a disconnect.  In this example, we load the `NoSpheroConnectedScene` if a user's ball disconnects.
 
-	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
-	{
-		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
-		Sphero notifiedSphero = SpheroProvider.GetSharedProvider().GetSphero(message.RobotID);
-		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
-			notifiedSphero.ConnectionState = Sphero.Connection_State.Disconnected;
-			Application.LoadLevel("NoSpheroConnectedScene");
-		}
-	}
+These are used in the Update method to change the location and rotation of the Sphero model. 
 		
 
 ## Community and Help
