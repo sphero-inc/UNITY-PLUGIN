@@ -78,10 +78,15 @@ public class SpheroDeviceMessenger  {
 		}
 	}
 	
-#if UNITY_ANDROID
-	[DllImport ("unity_bridge")]
-#elif UNITY_IPHONE
-	[DllImport ("__Internal")]
-#endif
+#if UNITY_EDITOR
+	private static void _RegisterRecieveDeviceMessageCallback(ReceiveDeviceMessageDelegate callback) {}
+#else
+	#if UNITY_ANDROID
+		[DllImport ("unity_bridge")]
+	#elif UNITY_IPHONE
+		[DllImport ("__Internal")]		
+	#endif
 	private static extern void _RegisterRecieveDeviceMessageCallback(ReceiveDeviceMessageDelegate callback);
+#endif	
+	
 }

@@ -23,9 +23,12 @@ public abstract class SpheroProvider {
 	/* Get the shared RobotProvider instance */
 	public static SpheroProvider GetSharedProvider() {
 		if( sharedProvider == null ) {
-			#if UNITY_ANDROID			
+			#if UNITY_EDITOR
+				sharedProvider = new SpheroProviderEditor();
+				sharedProvider.m_PairedSpheros = new Sphero[0];
+			#elif UNITY_ANDROID			
 				sharedProvider = new SpheroProviderAndroid();
-			#else
+			#elif UNITY_IPHONE
 				sharedProvider = new SpheroProviderIOS();
 			#endif			
 		}
