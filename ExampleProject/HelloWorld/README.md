@@ -8,7 +8,7 @@ The HelloWorld example demonstrates how to properly manage a Sphero application 
 
 ---
 
-This subject is important, because you need to make sure Sphero is always in a stable state.  To accomplish this, you need to be properly shutting down everything you register for, including Sphero itself.  The code below shows the way to properly register/unregister notification delegates, show the `NoSpheroConnectionScene` and disconnect Sphero.
+This subject is important, because you need to make sure Sphero is always in a stable state during and after your app executes.  To accomplish this, you need to be properly shutting down everything you register for, including Sphero itself.  The code below shows the way to properly register/unregister notification delegates, show the `NoSpheroConnectionScene`, and disconnect Sphero.
 
 	void ViewSetup() {
 		// Get Connected Sphero
@@ -32,11 +32,13 @@ This subject is important, because you need to make sure Sphero is always in a s
 		}
 	}
 	
-The OnApplicationPause() method is called on Android and iOS when the user presses the home button.  At this point, the app should not be connected to any Spheros, so we call the SpheroProvider function to disconnect any connected Spheros.  This will properly disconnect them and automatically put them in a stable state. Also, if your app is only a Sphero app, it is wise to check if any Spheros are connected at the start, so you can then bring up the connection scene (especially if the user brings the app back up from the background).
+If your app is only a Sphero app, it is wise to check if any Spheros are connected at the start, so you can then bring up the connection scene (especially if the user brings the app back up from the background).
+
+The OnApplicationPause() method is called on Android and iOS when the user presses the home button.  At this point, our app is going into the background, so we call the SpheroProvider function to disconnect any connected Spheros.  This will properly disconnect them and automatically put them in a stable state. 
 
 ## Blinking Sphero Blue
 
-You can change the color of Sphero, along with accessing it's current color, by using the code below.  The color change only occurs at frequency of once every 20 Update() calls.
+You can change the color of Sphero, along with accessing it's current color, by using the code below.  The color change only occurs at a frequency of once every 20 Update() calls.
 
 		m_BlinkCounter++;
 		if( m_BlinkCounter % 20 == 0 ) {			

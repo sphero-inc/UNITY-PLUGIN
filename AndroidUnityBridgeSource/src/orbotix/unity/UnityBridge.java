@@ -12,6 +12,7 @@ import orbotix.robot.base.DeviceMessageEncoder;
 import orbotix.robot.base.DeviceMessenger;
 import orbotix.robot.base.DeviceNotification;
 import orbotix.robot.base.DeviceSensorsAsyncData;
+import orbotix.robot.base.RGBLEDOutputCommand;
 import orbotix.robot.base.Robot;
 import orbotix.robot.base.RobotProvider;
 import orbotix.robot.base.SetDataStreamingCommand;
