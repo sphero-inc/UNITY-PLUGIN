@@ -12,11 +12,11 @@ The Sphero Unity Plugin is a group of C# classes that form a bridge between Unit
 
 ---
 
-* [HelloWorld](https://github.com/orbotix/Sphero-Unity-Plugin/tree/master/ExampleProject/HelloWorld) - Connect to Sphero and blink the RGB LED.  This is the most compact and easy to follow sample for dealing with Sphero. 
+* [HelloWorld](https://github.com/orbotix/UNITY-PLUGIN/tree/master/ExampleProject/HelloWorld) - Connect to Sphero and blink the RGB LED.  This is the most compact and easy to follow sample for dealing with Sphero. 
  
-* [SensorStreaming](https://github.com/orbotix/Sphero-Unity-Plugin/tree/master/ExampleProject/SensorStreaming) - If you want to use the sensor data from Sphero (to control GameObjects on screen), you should check this sample out. 
+* [SensorStreaming](https://github.com/orbotix/UNITY-PLUGIN/tree/master/ExampleProject/SensorStreaming) - If you want to use the sensor data from Sphero (to control GameObjects on screen), you should check this sample out. 
 
-* [UISample](https://github.com/orbotix/Sphero-Unity-Plugin/tree/master/ExampleProject/RobotUISample) - The UISample is a great place to start for drive apps.  It already has elements for a button calibration widget, and a joystick for driving Sphero.		
+* [UISample](https://github.com/orbotix/UNITY-PLUGIN/tree/master/ExampleProject/UISample) - The UISample is a great place to start for drive apps.  It already has elements for a button calibration widget, and a joystick for driving Sphero.		
 	
 ## Adding Sphero to a New or Existing Project
 
@@ -42,7 +42,7 @@ Third, the `Splash Screen` Inspector variable takes a Texture2D to display as iO
 
 Next, create another scene and save it as `NoSpheroConnectedScene`.  Drag the `NoSpheroConnectedView` prefab, from the same directory as where you found the SpheroConnectionView, into your scene.  This scene also has a `Next Level` field in the inspector, and it should be the same string value as the one in the SpheroConnectionScene.  On iOS, the SpheroConnectionScene will load the NoSpheroConnectedScene if it can't connect to a Sphero within a second.
 
-![nospheroconnected.png](https://github.com/orbotix/Sphero-Unity-Plugin/raw/master/assets/image01.png)
+![nospheroconnected.png](https://github.com/orbotix/UNITY-PLUGIN/blob/master/Images/NoSpheroConnected.png?raw=true)
 
 This is what you should see on iOS.  The scene is trying to connect to a Sphero when this is running.  On Android, the searching progress is replaced by a connect button that takes the user to the SpheroConnectionScene.
 
