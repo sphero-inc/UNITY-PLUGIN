@@ -23,7 +23,7 @@ After registering the event handler, the connected Sphero object is retrieved fr
 			SpheroDataStreamingMask.QuaternionAll |
 			SpheroDataStreamingMask.IMUAnglesFilteredAll);
 			
-Enabling controller streaming turns off stabilization. This turns off the control system, so it will not try to maintain the drive mechanism in a fix postion which will prevent the data from changing. Then, it turns on the blue back LED which provides you with a reference for the sensors' negative x axes. Finally, the data streaming command is sent with the sample rate at 20 samples per second (400/20), 1 sample per sent packet, and acceleromter, IMU (attitude), and Quaternion data turned on. 
+Enabling controller streaming turns off stabilization. This turns off the control system, so it will not try to maintain the drive mechanism in a fix postion which will prevent the data from changing. Then, it turns on the blue back LED which provides you with a reference for the sensors' negative x axes. Finally, the data streaming command is sent with the sample rate at 20 samples per second (400/20), 1 sample per sent packet, and accelerometer, IMU (attitude), and Quaternion data turned on. 
 
 
 Streaming is disabled if the application pauses (is backgrounded) and streaming event handler is removed.
