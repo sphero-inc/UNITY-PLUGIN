@@ -19,9 +19,11 @@ public class SpheroConnectionView : MonoBehaviour {
 	Vector2 m_SpinnerPosition = new Vector2(0, 0);
 	Vector2 m_SpinnerPivotPos = new Vector2(0, 0);
 	Rect m_SpinnerRect;
+	
 	// Other icons
 	public Texture2D m_CheckMark;
 	public Texture2D m_RedX;
+	public Texture2D m_SplashScreen;   // Used only when iOS is connecting
 	
 	// UI Padding Variables
 	int m_ViewPadding = 20;
@@ -44,6 +46,7 @@ public class SpheroConnectionView : MonoBehaviour {
 	SpheroProvider m_SpheroProvider;
 	// Paired Sphero Info
 	string[] m_RobotNames;
+	string m_ConnectingRobotName;
 	
     // Internal variables for managing touches and drags
 	private int selected = -1;
@@ -60,12 +63,13 @@ public class SpheroConnectionView : MonoBehaviour {
 	
 	/* Use this to initialize the view */
 	private void ViewSetup() {
+		m_SpheroProvider = SpheroProvider.GetSharedProvider();
 		#if UNITY_ANDROID
 			SetupAndroid();
 		#elif UNITY_IPHONE
 			SetupIOS();
 		#else
-			// Display that it doesn't work with these platforms
+			// Display that it doesn't work with these platforms?
 		#endif
 	}
 	
@@ -90,9 +94,20 @@ public class SpheroConnectionView : MonoBehaviour {
 	 * Called if the OS is iOS to immediately try to connect to the robot
 	 */
 	void SetupIOS() {
-		// initialize the Sphero Provider (Cannot call in the initialization of member variables or you will get a crash!)
-		m_SpheroProvider = SpheroProvider.GetSharedProvider();
-		Application.LoadLevel("NoSpheroConnectedScene");
+		m_MultipleSpheros = false;
+		// Initialize the device messenger which sets up the callback
+		SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
+		SpheroProvider.GetSharedProvider().Connect(0);
+		Invoke("CheckForSpheroConnection",1.5f);
+	}
+	
+	/*
+	 * Check if a Sphero has connected or not.  If not, load the No Sphero Connected Scene 
+	 */
+	void CheckForSpheroConnection() {
+		if( m_SpheroProvider.GetConnectedSpheros().Length == 0 ) {
+			Application.LoadLevel("NoSpheroConnectedScene");	
+		}
 	}
 
 	/*
@@ -125,6 +140,7 @@ public class SpheroConnectionView : MonoBehaviour {
 			if( m_RobotNames.Length == 1 ) {
 				m_SpheroProvider.PairedSpheros[0].ConnectionState = Sphero.Connection_State.Connecting;
 				m_SpheroLabelSelected = 0;
+				m_ConnectingRobotName = m_SpheroProvider.PairedSpheros[0].DeviceInfo.Name;
 			}
 		}
 	}
@@ -136,14 +152,20 @@ public class SpheroConnectionView : MonoBehaviour {
 	{
 		SpheroDeviceNotification message = (SpheroDeviceNotification)eventArgs.Message;
 		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTED ) {
+			
 			// Connect to the robot and move to the next scene designated by the developer
 			if( !m_MultipleSpheros ) {
 				m_Title = "Connection Success";
+				SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
 				Application.LoadLevel(m_NextLevel); 
 			}
 		}
 		else if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTION_FAILED ) {
-			m_Title = "Connection Failed";
+			Sphero notifiedSphero = m_SpheroProvider.GetSphero(message.RobotID);
+			// Connection only has failed if we are trying to connect to that robot the notification belongs to
+			if( m_ConnectingRobotName.Equals(notifiedSphero.DeviceInfo.Name)) {
+				m_Title = "Connection Failed";
+			}
 		}
 	}
 	
@@ -218,7 +240,8 @@ public class SpheroConnectionView : MonoBehaviour {
 		m_SpheroProvider.Connect(row);
 		// Adjust title info
 		m_SpheroLabelSelected = row;
-		m_Title = "Connecting to " + m_RobotNames[m_SpheroLabelSelected];		
+		m_Title = "Connecting to " + m_RobotNames[m_SpheroLabelSelected];	
+		m_ConnectingRobotName = m_RobotNames[m_SpheroLabelSelected];
 	}
 	
 	// Called when the GUI should update
@@ -257,6 +280,7 @@ public class SpheroConnectionView : MonoBehaviour {
 		if( GUI.Button(new Rect(connectBtnX,connectBtnY,m_ButtonWidth,m_ButtonHeight), buttonLabel )) {
 			// Check if we are done adding robots
 			if( buttonLabel.Equals("Done") ){
+				SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
 				Application.LoadLevel(m_NextLevel); 	
 			}
 			// Check if we have a Sphero connected
@@ -283,6 +307,8 @@ public class SpheroConnectionView : MonoBehaviour {
 	        GUI.matrix = matrixBackup;
 			m_SpinnerAngle+=3;
 		}
+#else
+		GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),m_SplashScreen);
 #endif
 	}
 

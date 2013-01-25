@@ -1,28 +1,18 @@
 # Sphero Unity Plugin
 
----
-This plugin is meant to be open source.  The underlying architecture is in place; however, it isn't as complete as our iOS and Android SDKs.  We want the community to be involved with the Unity Plugin's progression and development.  We will be monitoring pull request on the Github Repo, so feel free to make changes.  
-
-## Community and Help
-
----
-
-* [Developer Forum](http://forum.gosphero.com/) - Share your project, get help and talk to the Sphero developers!
-
-
 ## Overview
 
 ---
 
-The Sphero Unity Plugin is essentially a group of C# classes that form a bridge between Unity and our Native Android and iOS SDKs.  Unity can call down into each platform's native code for Sphero commands and receive asynchronous data callbacks from native code up into Unity.  The easiest way to get going with the plugin is by starting with on of the samples we have created. If you have an existing project you want to integrate Sphero into, please continue reading. 
+The Sphero Unity Plugin is a group of C# classes that form a bridge between Unity and our native Android™ and iOS™ SDKs.  Unity can call down into each platform's native code for Sphero commands and receive asynchronous data callbacks from native code up into Unity.  The easiest way to get going with the plugin is by starting with one of the samples we have created. If you have an existing project you want to integrate Sphero into, please continue reading. 
 
-	Notice: The Sphero Unity Plugin only works with Android and iOS
+	Notice: The Sphero Unity Plugin only works with Android and iOS.
 	
 ## Sphero Unity Samples
 
 ---
 
- * [HelloWorld](https://github.com/orbotix/Sphero-Unity-Plugin/tree/master/ExampleProject/HelloWorld) - Connect to Sphero and blink the RGB LED.  This is the most compact and easy to follow sample for dealing with Sphero. 
+* [HelloWorld](https://github.com/orbotix/Sphero-Unity-Plugin/tree/master/ExampleProject/HelloWorld) - Connect to Sphero and blink the RGB LED.  This is the most compact and easy to follow sample for dealing with Sphero. 
  
 * [SensorStreaming](https://github.com/orbotix/Sphero-Unity-Plugin/tree/master/ExampleProject/SensorStreaming) - If you want to use the sensor data from Sphero (to control GameObjects on screen), you should check this sample out. 
 
@@ -45,6 +35,8 @@ Start by choosing File -> New Scene, and save it as `SpheroConnectionScene`.  Al
 First, the `Next Level` is a string of the name of the scene that you want Unity to load after the SpheroConnectionScene is done.  It will proceed to the scene after it connects to a Sphero.   
 
 Second, on Android, you have the abilitiy to connect to multiple Spheros, which you enable by checking the `Multiple Spheros` check box. 
+
+Third, the `Splash Screen` Inspector variable takes a Texture2D to display as iOS attempts to connect.  This should be the same splash screen that your application uses if you want the transition to be fluid.
 
 ### No Sphero Connected Scene
 
@@ -74,7 +66,7 @@ This array will have a length of 0 if no Spheros are connected. And only ever be
 
 #### Disconnecting Sphero
 
-It is proper Sphero edicate to shutdown the robot properly.  This ensures that the robot will be left in a stable state when your app is not using it.  In our samples we encourage disconnecting the Spheros in the OnApplicationPause() method, which gurentees the Spheros will be properly disconnected on both platforms.
+It is proper Sphero etiquette to shutdown the robot properly.  This ensures that the robot will be left in a stable state when your app is not using it.  In our samples we encourage disconnecting the Spheros in the OnApplicationPause() method, which guarantees the Spheros will be properly disconnected on both platforms.
 
 C#
 
@@ -117,7 +109,7 @@ Remember to unregister for the notification when you no longer need it.
 
 	SpheroDeviceMessenger.SharedInstance.NotificationReceived -= Re	ceiveNotificationMessage;
 
-Receive the data and do what you want with it.  Every message has the unique robot id that the message pertains too and a timestamp.  In this instance, there is also a notification type.  The code snippet below sets the state of a Sphero object to disconnected when the disconnect notification message is received.
+Receive the data and do what you want with it.  Every message has the unique robot id that the message pertains to and a timestamp.  In this instance, there is also a notification type.  The code snippet below sets the state of a Sphero object to disconnected when the disconnect notification message is received.
 
 	private void ReceiveNotificationMessage(object sender, SpheroDeviceMessenger.MessengerEventArgs eventArgs)
 	{
@@ -136,3 +128,19 @@ For a walkthrough of the asynchronous message handling, see the SensorStreaming 
 When building for iOS, XCode requires a few extra frameworks to work with our `RobotKit.framework` (iOS Native Sphero SDK).  So, we wrote a post process build script that you should include in your Unity project if you want to be able to hit "Build And Run…" and not have to add the RobotKit.framework, ExternalAccessory.framework, and the supported external accessory protocol of "com.orbotix.robotprotocol" in the info.plist.
 
 Simply drag the Editor folder found in the Assets folder of any of the examples in the Sphero-Unity-Plugin into your project's Assets directory.
+
+## License
+
+---
+The Sphero Unity Plugin is distributed under the Orbotix Source Code License.  Developers are encouraged to help build the plugin and make pull requests to our main Github repository.
+
+## Community and Help
+
+---
+
+* [Developer Forum](http://forum.gosphero.com/) - Share your project, get help and talk to the Sphero developers!
+
+---
+
+*Android™ is a registerd trademark of Google Inc* |
+*iOS™ is a licensed trademark of Apple*

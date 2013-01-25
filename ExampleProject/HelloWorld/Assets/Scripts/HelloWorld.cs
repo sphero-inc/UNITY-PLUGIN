@@ -28,9 +28,9 @@ public class HelloWorld : MonoBehaviour {
 	/* This is called when the application returns from or enters background */
 	void OnApplicationPause(bool pause) {
 		if( pause ) {
+			SpheroProvider.GetSharedProvider().DisconnectSpheros();
 			// Initialize the device messenger which sets up the callback
 			SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
-			SpheroProvider.GetSharedProvider().DisconnectSpheros();
 		}
 		else {
 			ViewSetup();
