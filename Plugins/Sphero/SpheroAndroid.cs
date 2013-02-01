@@ -19,6 +19,7 @@ public class SpheroAndroid : Sphero {
 	private AndroidJavaClass m_RollCommand = new AndroidJavaClass("orbotix.robot.base.RollCommand");
 	private AndroidJavaClass m_SetHeadingCommand = new AndroidJavaClass("orbotix.robot.base.SetHeadingCommand");
 	private AndroidJavaClass m_BackLEDOutputCommand = new AndroidJavaClass("orbotix.robot.base.BackLEDOutputCommand");
+	private AndroidJavaClass m_RawMotorCommand = new AndroidJavaClass("orbotix.robot.base.RawMotorCommand");
 	
 	/* More detailed constructor used for Android */ 
 	public SpheroAndroid(AndroidJavaObject sphero, string bt_name, string bt_address) : base() {		
@@ -53,6 +54,20 @@ public class SpheroAndroid : Sphero {
 	
 	override public void SetBackLED(float intensity) {
 		m_BackLEDOutputCommand.CallStatic("sendCommand",m_AndroidJavaSphero,intensity);
+	}
+
+	override public void SetRawMotorValues(
+		SpheroRawMotorMode leftMode,
+		float leftPower,
+		SpheroRawMotorMode rightMode,
+		float rightPower) {
+		m_RawMotorCommand.CallStatic(
+			"sendCommand",
+			m_AndroidJavaSphero,
+			(int)leftMode,
+			(int)(leftPower * 255f),
+			(int)rightMode,
+			(int)(rightPower * 255f));
 	}
 }
 

@@ -41,12 +41,27 @@ public class SpheroIOS : Sphero {
 	override public void SetBackLED(float intensity) {
 		setBackLED(intensity);	
 	}
+
+	override public void SetRawMotorValues(
+		SpheroRawMotorMode leftMode,
+		float leftPower,
+		SpheroRawMotorMode rightMode,
+		float rightPower) {
+		
+		setRawMotorValues(leftMode, (int)(leftPower * 255f), rightMode, (int)(rightPower * 255f));
+	}
 	
 	/* Native Bridge Functions from RKUNBridge.mm */
 	[DllImport ("__Internal")]
 	private static extern void setRGB(float red, float green, float blue);
 	[DllImport ("__Internal")]
 	private static extern void roll(int heading, float speed);
+	[DllImport ("__Internal")]
+	private static extern void setRawMotorValues(
+		SpheroRawMotorMode leftMode,
+		int leftPower,
+		SpheroRawMotorMode rightMode,
+		int rightPower);
 	[DllImport ("__Internal")]
 	private static extern void setHeading(int heading);
 	[DllImport ("__Internal")]
