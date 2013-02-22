@@ -91,4 +91,23 @@ public abstract class Sphero {
 	 * @param intensity is the brightness of the back LED
 	 */
 	abstract public void SetBackLED(float intensity);
+
+	/*
+	 * Sets the raw motor modes of sphero
+	 * @param	leftMode the left raw motor mode
+	 * @param	leftPower the left raw motor power (0f is stopped, 1f is full power)
+	 * @param	rightMode the right raw motor mode
+	 * @param	rightPower the right raw motor power (0f is stopped, 1f is full power)
+	 */
+	abstract public void SetRawMotorValues(
+		SpheroRawMotorMode leftMode,
+		float leftPower,
+		SpheroRawMotorMode rightMode,
+		float rightPower);
+
+	/*
+	 * Sends a @a macro down to the Sphero as a stream of bytes
+	 * @param 	macro the macro to send
+	 */
+	abstract public void SendMacroWithBytes(byte[] macro);
 }

@@ -27,6 +27,7 @@ public class SpheroProviderAndroid : SpheroProvider {
 		}
 		// Sign up for notifications on Sphero connections
 		SpheroDeviceMessenger.SharedInstance.NotificationReceived += ReceiveNotificationMessage;
+		m_PairedSpheros = new Sphero[0];
 	}
 	
 	/*
