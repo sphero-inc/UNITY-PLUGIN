@@ -20,6 +20,8 @@ public class SpheroAndroid : Sphero {
 	private AndroidJavaClass m_SetHeadingCommand = new AndroidJavaClass("orbotix.robot.base.SetHeadingCommand");
 	private AndroidJavaClass m_BackLEDOutputCommand = new AndroidJavaClass("orbotix.robot.base.BackLEDOutputCommand");
 	private AndroidJavaClass m_RawMotorCommand = new AndroidJavaClass("orbotix.robot.base.RawMotorCommand");
+	private AndroidJavaClass m_SaveTemporaryMacroCommand = new AndroidJavaClass("orbotix.robot.base.SaveTemporaryMacroCommand");
+	private AndroidJavaClass m_RunMacroCommand = new AndroidJavaClass("orbotix.robot.base.RunMacroCommand");
 	
 	/* More detailed constructor used for Android */ 
 	public SpheroAndroid(AndroidJavaObject sphero, string bt_name, string bt_address) : base() {		
@@ -68,6 +70,16 @@ public class SpheroAndroid : Sphero {
 			(int)(leftPower * 255f),
 			(int)rightMode,
 			(int)(rightPower * 255f));
+	}
+
+	override public void SendMacroWithBytes(byte[] macro)
+	{
+		m_SaveTemporaryMacroCommand.CallStatic(
+			"sendCommand",
+			m_AndroidJavaSphero,
+			(byte)0,
+			macro);
+		m_RunMacroCommand.CallStatic("sendCommand", m_AndroidJavaSphero, (byte)255);
 	}
 }
 

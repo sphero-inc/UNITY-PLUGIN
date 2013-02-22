@@ -50,6 +50,10 @@ public class SpheroIOS : Sphero {
 		
 		setRawMotorValues(leftMode, (int)(leftPower * 255f), rightMode, (int)(rightPower * 255f));
 	}
+
+	override public void SendMacroWithBytes(byte[] macro) {
+		sendMacroWithBytes(macro, macro.Length);
+	}
 	
 	/* Native Bridge Functions from RKUNBridge.mm */
 	[DllImport ("__Internal")]
@@ -62,6 +66,8 @@ public class SpheroIOS : Sphero {
 		int leftPower,
 		SpheroRawMotorMode rightMode,
 		int rightPower);
+	[DllImport ("__Internal")]
+	private static extern void sendMacroWithBytes(byte[] bytes, int size);
 	[DllImport ("__Internal")]
 	private static extern void setHeading(int heading);
 	[DllImport ("__Internal")]
