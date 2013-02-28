@@ -127,7 +127,7 @@ For a walkthrough of the asynchronous message handling, see the SensorStreaming 
 ---
 When building for iOS, XCode requires a few extra frameworks to work with our `RobotKit.framework` (iOS Native Sphero SDK).  So, we wrote a post process build script that you should include in your Unity project if you want to be able to hit "Build And Run…" and not have to add the RobotKit.framework, ExternalAccessory.framework, and the supported external accessory protocol of "com.orbotix.robotprotocol" in the info.plist.
 
-Simply drag the Editor folder found in the Assets folder of any of the examples in the Sphero-Unity-Plugin into your project's Assets directory.
+Simply drag the Editor folder found in the Assets folder of any of the examples in the Sphero-Unity-Plugin into your project's Assets directory.  Also, RobotKit.framework will be missing, unless you create the iOS build folder in Unity in the same directory as the Assets folder.
 
 ## License
 
