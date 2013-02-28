@@ -158,6 +158,25 @@ extern "C" {
     void roll(int heading, float speed) {
         [RKRollCommand sendCommandWithHeading:heading velocity:speed];
     }
+
+    void setRawMotorValues(
+        RKRawMotorMode leftMode,
+        RKRawMotorPower leftPower,
+        RKRawMotorMode rightMode,
+        RKRawMotorPower rightPower) {
+
+        [RKRawMotorValuesCommand sendCommandWithLeftMode:leftMode
+                                               leftPower:leftPower
+                                               rightMode:rightMode
+                                              rightPower:rightPower];
+    }
+
+    void sendMacroWithBytes(unsigned char* macro, int32_t length)
+    {
+        NSData* data = [NSData dataWithBytes:macro length:length];
+        [RKSaveTemporaryMacroCommand sendCommandWithMacro:data flags:RKMacroFlagNone];
+        [RKRunMacroCommand sendCommandWithId:255];
+    }
     
     void setDataStreaming(uint16_t sampleRateDivisor, uint16_t sampleFrames,
     	 uint64_t sampleMask, uint8_t sampleCount)
