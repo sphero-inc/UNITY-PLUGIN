@@ -64,6 +64,12 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     // Send serialized object to Unity
     if (receiveDeviceMessageCallback != NULL) {
         RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:notification];
+        
+        // Print a log statement to solve build bug
+        if( ![encoder respondsToSelector:@selector(RKJSONRepresentation)] ) {
+            NSLog(@"The application will crash, because you have not included the -all_load linker flag in the build settings of this xcodeproject");
+        }
+        
         receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
     }
     robotOnline = YES;
