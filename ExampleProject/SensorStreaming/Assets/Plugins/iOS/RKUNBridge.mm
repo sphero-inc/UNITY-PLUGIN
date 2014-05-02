@@ -49,9 +49,9 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOffline) name:RKDeviceConnectionOfflineNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOffline) name:RKRobotDidLossControlNotification object:nil];
     robotInitialized = NO;
-    if ([[RKRobotProvider sharedRobotProvider] isRobotUnderControl]) {
-        [[RKRobotProvider sharedRobotProvider] openRobotConnection];        
-    }
+
+    [[RKRobotProvider sharedRobotProvider] openRobotConnection];
+
     robotInitialized = YES;
 }
 

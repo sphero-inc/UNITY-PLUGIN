@@ -49,9 +49,9 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOffline) name:RKDeviceConnectionOfflineNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOffline) name:RKRobotDidLossControlNotification object:nil];
     robotInitialized = NO;
-    if ([[RKRobotProvider sharedRobotProvider] isRobotUnderControl]) {
-        [[RKRobotProvider sharedRobotProvider] openRobotConnection];        
-    }
+
+    [[RKRobotProvider sharedRobotProvider] openRobotConnection];
+
     robotInitialized = YES;
 }
 
@@ -64,6 +64,12 @@ extern void UnitySendMessage(const char *, const char *, const char *);
     // Send serialized object to Unity
     if (receiveDeviceMessageCallback != NULL) {
         RKDeviceMessageEncoder *encoder = [RKDeviceMessageEncoder encodeWithRootObject:notification];
+        
+        // Print a log statement to solve build bug
+        if( ![encoder respondsToSelector:@selector(RKJSONRepresentation)] ) {
+            NSLog(@"The application will crash, because you have not included the -all_load linker flag in the build settings of this xcodeproject");
+        }
+        
         receiveDeviceMessageCallback([[encoder stringRepresentation] UTF8String]);
     }
     robotOnline = YES;
@@ -157,25 +163,6 @@ extern "C" {
     
     void roll(int heading, float speed) {
         [RKRollCommand sendCommandWithHeading:heading velocity:speed];
-    }
-
-    void setRawMotorValues(
-        RKRawMotorMode leftMode,
-        RKRawMotorPower leftPower,
-        RKRawMotorMode rightMode,
-        RKRawMotorPower rightPower) {
-
-        [RKRawMotorValuesCommand sendCommandWithLeftMode:leftMode
-                                               leftPower:leftPower
-                                               rightMode:rightMode
-                                              rightPower:rightPower];
-    }
-
-    void sendMacroWithBytes(unsigned char* macro, int32_t length)
-    {
-        NSData* data = [NSData dataWithBytes:macro length:length];
-        [RKSaveTemporaryMacroCommand sendCommandWithMacro:data flags:RKMacroFlagNone];
-        [RKRunMacroCommand sendCommandWithId:255];
     }
     
     void setDataStreaming(uint16_t sampleRateDivisor, uint16_t sampleFrames,
