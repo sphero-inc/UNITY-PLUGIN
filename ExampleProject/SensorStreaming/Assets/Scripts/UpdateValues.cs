@@ -18,14 +18,26 @@ public class UpdateValues: MonoBehaviour {
 	private float q1 = 1.0f;
 	private float q2 = 1.0f;
 	private float q3 = 1.0f;
+
+	private ThreadSafeLoadLevel m_threadSafeLoadLevel;
 	
 	/* Use this for initialization */
 	void ViewSetup() {
 		// Get Connected Sphero
 		SpheroDeviceMessenger.SharedInstance.NotificationReceived +=
 			 ReceiveNotificationMessage;
-		if( SpheroProvider.GetSharedProvider().GetConnectedSpheros().Length == 0 )
-			Application.LoadLevel("SpheroConnectionScene");
+		if (SpheroProvider.GetSharedProvider().GetConnectedSpheros().Length == 0)
+		{
+			if (m_threadSafeLoadLevel != null)
+			{
+				m_threadSafeLoadLevel.LoadLevel("SpheroConnectionScene");
+			}
+		}
+	}
+
+	void Awake()
+	{
+		m_threadSafeLoadLevel = ThreadSafeLoadLevel.Instance;
 	}
 
 	// Use this for initialization
@@ -132,7 +144,10 @@ public class UpdateValues: MonoBehaviour {
 		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
 			notifiedSphero.ConnectionState = Sphero.Connection_State.Disconnected;
 			streaming = false;
-			Application.LoadLevel("NoSpheroConnectedScene");
+			if (m_threadSafeLoadLevel != null)
+			{
+				m_threadSafeLoadLevel.LoadLevel("NoSpheroConnectedScene");
+			}
 		}
 	}
 }
