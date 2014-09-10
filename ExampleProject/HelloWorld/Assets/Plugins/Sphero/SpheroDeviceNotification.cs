@@ -6,7 +6,8 @@ public class SpheroDeviceNotification : SpheroDeviceMessage
 	public enum SpheroNotificationType : int {
 		CONNECTED         = 0,
 		DISCONNECTED      = 1,
-		CONNECTION_FAILED = 2
+		CONNECTION_FAILED = 2,
+		LOW_POWER		  = 3
 	}
 	private SpheroNotificationType m_NotificationType;
 	public SpheroNotificationType NotificationType {

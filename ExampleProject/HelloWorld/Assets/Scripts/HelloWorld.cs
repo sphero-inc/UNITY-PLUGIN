@@ -49,7 +49,19 @@ public class HelloWorld : MonoBehaviour {
 				else {
 					sphero.SetRGBLED(BLACK.r,BLACK.g,BLACK.b);	
 				}
+				//Check the power state here every so often (probably better to put this in a coroutine
+				sphero.GetPowerState();
 			}
+		}
+	}
+
+	private bool BatteryOK = true;
+
+	void OnGUI () {
+		if(BatteryOK == true) {
+			GUI.Label(new Rect(25, 25, 100, 30), "Battery OK");
+		} else {
+			GUI.Label (new Rect(25, 25, 100, 30), "Battery LOW");
 		}
 	}
 
@@ -63,6 +75,9 @@ public class HelloWorld : MonoBehaviour {
 		if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.DISCONNECTED ) {
 			notifiedSphero.ConnectionState = Sphero.Connection_State.Disconnected;
 			Application.LoadLevel("NoSpheroConnectedScene");
+		} else if(message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.LOW_POWER ) {
+			//THE BATTERY IS LOW!
+			BatteryOK = false;
 		}
 	}
 }

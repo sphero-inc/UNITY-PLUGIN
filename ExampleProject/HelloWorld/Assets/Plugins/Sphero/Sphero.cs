@@ -91,4 +91,6 @@ public abstract class Sphero {
 	 * @param intensity is the brightness of the back LED
 	 */
 	abstract public void SetBackLED(float intensity);
+
+	abstract public void GetPowerState();
 }

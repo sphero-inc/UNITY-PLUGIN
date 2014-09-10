@@ -41,6 +41,10 @@ public class SpheroIOS : Sphero {
 	override public void SetBackLED(float intensity) {
 		setBackLED(intensity);	
 	}
+
+	override public void GetPowerState() {
+		
+	}
 	
 	/* Native Bridge Functions from RKUNBridge.mm */
 	[DllImport ("__Internal")]

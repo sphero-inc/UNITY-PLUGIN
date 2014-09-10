@@ -6,17 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import orbotix.robot.base.BackLEDOutputCommand;
-import orbotix.robot.base.DeviceAsyncData;
-import orbotix.robot.base.DeviceMessageEncoder;
-import orbotix.robot.base.DeviceMessenger;
-import orbotix.robot.base.DeviceNotification;
-import orbotix.robot.base.DeviceSensorsAsyncData;
-import orbotix.robot.base.RGBLEDOutputCommand;
-import orbotix.robot.base.Robot;
-import orbotix.robot.base.RobotProvider;
-import orbotix.robot.base.SetDataStreamingCommand;
-import orbotix.robot.base.StabilizationCommand;
+import orbotix.robot.base.*;
 
 /**
  * This is the Native Android code that manages sending data streaming to Unity using a function pointer in C++ libunity_bridge.so
@@ -49,6 +39,8 @@ public class UnityBridge {
 	}
 	
 	private Handler mHandler = new Handler(Looper.getMainLooper());
+
+    private Robot mCurrentRobot = null;
 	
 	/**
 	 * Register for notifications that will then be sent to Unity
@@ -83,6 +75,8 @@ public class UnityBridge {
     private RobotProvider.OnRobotConnectedListener mConnectedListener = new RobotProvider.OnRobotConnectedListener() {
         @Override
         public void onRobotConnected(Robot robot) {
+            mCurrentRobot = robot;
+            DeviceMessenger.getInstance().addResponseListener(mCurrentRobot, mResponseListener);
         	DeviceNotification notification = new DeviceNotification(robot, DeviceNotification.DEVICE_NOTIFICATION_TYPE_CONNECTED);
         	final DeviceMessageEncoder encoder = DeviceMessageEncoder.encodeMessage(notification);
         	mHandler.post(new Runnable() {
@@ -100,6 +94,7 @@ public class UnityBridge {
     private RobotProvider.OnRobotDisconnectedListener mDisconnectedListener = new RobotProvider.OnRobotDisconnectedListener() {
 		@Override
 		public void onRobotDisconnected(Robot arg0) {
+            DeviceMessenger.getInstance().removeResponseListener(arg0, mResponseListener);
         	DeviceNotification notification = new DeviceNotification(arg0, DeviceNotification.DEVICE_NOTIFICATION_TYPE_DISCONNECTED);
         	final DeviceMessageEncoder encoder = DeviceMessageEncoder.encodeMessage(notification);
         	mHandler.post(new Runnable() {
@@ -160,6 +155,11 @@ public class UnityBridge {
 		SetDataStreamingCommand.sendCommand(robot,0,0,0,0);
 		DeviceMessenger.getInstance().removeAsyncDataListener(robot, mDataListener);
 	}
+
+    public void checkPowerState(Robot robot) {
+        GetPowerStateCommand.sendCommand(robot);
+    }
+
 	
 	/**
      * AsyncDataListener that will be assigned to the DeviceMessager, listen for streaming data, and then do the
@@ -169,6 +169,27 @@ public class UnityBridge {
         public void onDataReceived(DeviceAsyncData data) {
             if(data instanceof DeviceSensorsAsyncData){
             	UnityBridge.sharedBridge().sendMessage(DeviceMessageEncoder.encodeMessage(data).toString());
+            }
+        }
+    };
+
+    private DeviceMessenger.DeviceResponseListener mResponseListener = new DeviceMessenger.DeviceResponseListener() {
+        @Override
+        public void onResponse(DeviceResponse data) {
+            if (data instanceof GetPowerStateResponse) {
+                if(((GetPowerStateResponse) data).getPowerState() == GetPowerStateResponse.POWER_STATE_LOW ||
+                        ((GetPowerStateResponse) data).getPowerState() == GetPowerStateResponse.POWER_STATE_CRITICAL) {
+                    DeviceNotification notification = new DeviceNotification(mCurrentRobot, 3);
+                    final DeviceMessageEncoder encoder = DeviceMessageEncoder.encodeMessage(notification);
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            UnityBridge.sharedBridge().sendMessage(encoder.toString());
+                        }
+                    });
+
+
+                }
             }
         }
     };

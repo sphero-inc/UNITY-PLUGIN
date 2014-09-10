@@ -54,6 +54,10 @@ public class SpheroAndroid : Sphero {
 	override public void SetBackLED(float intensity) {
 		m_BackLEDOutputCommand.CallStatic("sendCommand",m_AndroidJavaSphero,intensity);
 	}
+
+	override public void GetPowerState() {
+		m_UnityBridge.Call("checkPowerState", m_AndroidJavaSphero);
+	}
 }
 
 #endif
