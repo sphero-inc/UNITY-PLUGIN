@@ -60,6 +60,8 @@ public class SpheroConnectionView : MonoBehaviour {
     Vector2 windowMargin = new Vector2(0,0);
     Vector2 listMargin = new Vector2(40,40);
     private Rect windowRect;
+
+	private ThreadSafeLoadLevel m_threadSafeLoadLevel;
 	
 	/* Use this to initialize the view */
 	private void ViewSetup() {
@@ -71,6 +73,11 @@ public class SpheroConnectionView : MonoBehaviour {
 		#else
 			// Display that it doesn't work with these platforms?
 		#endif
+	}
+
+	void Awake()
+	{
+		m_threadSafeLoadLevel = ThreadSafeLoadLevel.Instance;
 	}
 	
 	/* Use these for initialization */
@@ -106,7 +113,10 @@ public class SpheroConnectionView : MonoBehaviour {
 	 */
 	void CheckForSpheroConnection() {
 		if( m_SpheroProvider.GetConnectedSpheros().Length == 0 ) {
-			Application.LoadLevel("NoSpheroConnectedScene");	
+			if (m_threadSafeLoadLevel != null)
+			{
+				m_threadSafeLoadLevel.LoadLevel("NoSpheroConnectedScene");
+			}
 		}
 	}
 
@@ -157,7 +167,10 @@ public class SpheroConnectionView : MonoBehaviour {
 			if( !m_MultipleSpheros ) {
 				m_Title = "Connection Success";
 				SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
-				Application.LoadLevel(m_NextLevel); 
+				if (m_threadSafeLoadLevel != null)
+				{
+					m_threadSafeLoadLevel.LoadLevel(m_NextLevel);
+				}
 			}
 		}
 		else if( message.NotificationType == SpheroDeviceNotification.SpheroNotificationType.CONNECTION_FAILED ) {
@@ -281,7 +294,10 @@ public class SpheroConnectionView : MonoBehaviour {
 			// Check if we are done adding robots
 			if( buttonLabel.Equals("Done") ){
 				SpheroDeviceMessenger.SharedInstance.NotificationReceived -= ReceiveNotificationMessage;
-				Application.LoadLevel(m_NextLevel); 	
+				if (m_threadSafeLoadLevel != null)
+				{
+					m_threadSafeLoadLevel.LoadLevel(m_NextLevel);
+				}
 			}
 			// Check if we have a Sphero connected
 			else if( m_SpheroLabelSelected >= 0 ) {
